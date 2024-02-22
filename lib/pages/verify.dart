@@ -6,22 +6,26 @@ import 'package:reportaroad/pages/dash.dart';
 import 'package:reportaroad/pages/loginpage.dart';
 
 class Verify extends StatefulWidget {
-  const Verify({super.key});
+  final String verEmail;
+  const Verify({super.key,
+  required this.verEmail});
   @override 
   // ignore: library_private_types_in_public_api
   _VerifyState createState() => _VerifyState();
+
 }
 
 
-class _VerifyState extends State<Verify> {
 
+
+class _VerifyState extends State<Verify> {
    TextEditingController digitController = TextEditingController();
    bool _isNotValidate = false;
-
+   
    void verifyuser() async {
   if (digitController.text.isNotEmpty) {
     var regBody = {
-      // "userId": userId, // Replace 'userId' with the appropriate variable containing the user ID
+      "email": widget.verEmail,
       "Otp": digitController.text
     };
 
@@ -166,22 +170,22 @@ class _VerifyState extends State<Verify> {
                  const SizedBox(
                   height: 20.0,
                 ),
-                const Row(
-                  children: [
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          "Resend Code",
-                          style: TextStyle(
-                            color: Color(0xFF2C75FF),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                // const Row(
+                //   children: [
+                //     Expanded(
+                //       child: Center(
+                //         child: Text(
+                //           "Resend Code",
+                //           style: TextStyle(
+                //             color: Color(0xFF2C75FF),
+                //             fontWeight: FontWeight.bold,
+                //             fontSize: 15,
+                //           ),
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // ),
               ],
             ),
           ),

@@ -51,7 +51,7 @@ void signupuser() async {
       if (jsonResponse['status']) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Verify()),
+          MaterialPageRoute(builder: (context) => Verify(verEmail: emailController.text)),
         );
       }
     } else {

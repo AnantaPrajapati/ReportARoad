@@ -40,10 +40,11 @@ class MyApp extends StatelessWidget {
       initialRoute: "/",
       routes: {
        // home: (JwtDecoder.isExpired(token) == false)?Dashboard(token: token):Loginpage()
-        '/': (context) => const InitialPage(),
-        '/loginpage': (context) =>  Loginpage(),
-        '/signuppage': (context) => const Signuppage(),
-        '/verify': (context) => const Verify(),
+          '/': (context) => const Dashboard(),
+        // '/': (context) => const InitialPage(),
+        // '/loginpage': (context) =>  Loginpage(),
+        // '/signuppage': (context) => const Signuppage(),
+        // '/verify': (context) => const Verify(),
       },
     );
   }

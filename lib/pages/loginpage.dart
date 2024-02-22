@@ -8,69 +8,63 @@ import 'package:shared_preferences/shared_preferences.dart';
 // import 'pages/HOUpass.dart';
 // import 'package:reportaroad/pages/verify.dart';
 
-
 // import 'package:url_launcher/url_launcher.dart'; // Import url_launcher package
 
 // import 'package:reportaroad/server/http.dart' as http;
 
 class Loginpage extends StatefulWidget {
-   const Loginpage({super.key});
-@override 
+  const Loginpage({super.key});
+  @override
   // ignore: library_private_types_in_public_api
   _LoginpageState createState() => _LoginpageState();
 }
 
 class _LoginpageState extends State<Loginpage> {
   TextEditingController emailController = TextEditingController();
-   TextEditingController passwordController = TextEditingController();
-   bool _isNotValidate = false;
-   bool _isSecuredPassword = true;
-   late SharedPreferences prefs;
+  TextEditingController passwordController = TextEditingController();
+  bool _isNotValidate = false;
+  bool _isSecuredPassword = true;
+  late SharedPreferences prefs;
 
-   @override
+  @override
   void initState() {
     super.initState();
     initSharedPref();
   }
 
-  void initSharedPref() async{
+  void initSharedPref() async {
     prefs = await SharedPreferences.getInstance();
   }
-  
-  void loginuser() async{
-    if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty){
-        var reqBody ={
-          "email":emailController.text,
-          "password":passwordController.text
-        };
 
-        var response = await http.post(Uri.parse('http://localhost:3000/login'),
-        headers: {"Content-type":"application/json"},
-        body: jsonEncode(reqBody)
+  void loginuser() async {
+    if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
+      var reqBody = {
+        "email": emailController.text,
+        "password": passwordController.text
+      };
+
+      var response = await http.post(Uri.parse('http://localhost:3000/login'),
+          headers: {"Content-type": "application/json"},
+          body: jsonEncode(reqBody));
+
+      var jsonResponse = jsonDecode(response.body);
+      print(jsonResponse['status']);
+
+      if (jsonResponse['status']) {
+        var myToken = jsonResponse['token'];
+        prefs.setString('token', myToken);
+        // ignore: use_build_context_synchronously
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Dashboard(token: myToken)),
         );
-
-        var jsonResponse = jsonDecode(response.body);
-         print(jsonResponse['status']);
-
-        if(jsonResponse['status']){
-
-          var myToken = jsonResponse['token'];
-          prefs.setString('token', myToken);
-          // ignore: use_build_context_synchronously
-          Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>  Dashboard(token: myToken)),
-                    );
-        }
-    
-    }else {
-      setState((){
+      }
+    } else {
+      setState(() {
         _isNotValidate = true;
       });
     }
   }
-   
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +110,7 @@ class _LoginpageState extends State<Loginpage> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: TextFormField(
-                     controller: emailController,
+                    controller: emailController,
                     decoration: const InputDecoration(
                       hintText: "Email",
                       border: InputBorder
@@ -135,17 +129,21 @@ class _LoginpageState extends State<Loginpage> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: TextFormField(
-                    controller: passwordController, 
-                     obscureText: _isSecuredPassword,
+                    controller: passwordController,
+                    obscureText: _isSecuredPassword,
                     decoration: InputDecoration(
                       hintText: "Password",
                       // labelText: "Password",
-                      border: InputBorder.none, // Remove the default border of TextFormField
-                      contentPadding: const EdgeInsets.symmetric(vertical: 20.0),
-                       suffixIcon: tooglePassword(),
-                ), 
-              ), 
+                      border: InputBorder
+                          .none, // Remove the default border of TextFormField
+                      contentPadding:
+                          const EdgeInsets.symmetric(vertical: 20.0),
+                      suffixIcon: tooglePassword(),
+                    ),
+                  ),
                 ),
+               
+
                 const SizedBox(
                   height: 20.0,
                 ),
@@ -164,14 +162,43 @@ class _LoginpageState extends State<Loginpage> {
                   ),
                   onPressed: () {
                     loginuser();
-                    
                   },
                 ),
                 const SizedBox(
                   height: 20.0,
                 ),
-                const Row(
+                   Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    const Text(
+                      "Don't have an account? ",
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Signuppage()),
+                        );
+                      },
+                      child: const Text(
+                        "Signup",
+                        style: TextStyle(
+                          color: Color(0xFF2C75FF),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 5.0,
+                ),
+                const Row(
+                  children: [  
                     Expanded(
                       child: Divider(
                         thickness: 1,
@@ -230,17 +257,9 @@ class _LoginpageState extends State<Loginpage> {
                 //       ],
                 //     )),
                 const SizedBox(
-                  height: 20.0,
+                  height: 5.0,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Don't have an account? ",
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
+            
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -249,15 +268,18 @@ class _LoginpageState extends State<Loginpage> {
                               builder: (context) => const Signuppage()),
                         );
                       },
-                      child: const Text(
-                        "Signup",
-                        style: TextStyle(
-                          color: Color(0xFF2C75FF),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Text(
+                          "Forget Password?",
+                          style: TextStyle(
+                            color: Color(0xFF2C75FF),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                 
               ],
             ),
           ),
@@ -266,16 +288,16 @@ class _LoginpageState extends State<Loginpage> {
     );
   }
 
-
-
-    Widget tooglePassword(){
-   return IconButton(onPressed: () {
-    setState(() {
-       _isSecuredPassword = !_isSecuredPassword;
-    });
-   }, icon: _isSecuredPassword ? const Icon(Icons.visibility) : const Icon( Icons.visibility_off),
-   color: Colors.grey);    
-                    
+  Widget tooglePassword() {
+    return IconButton(
+        onPressed: () {
+          setState(() {
+            _isSecuredPassword = !_isSecuredPassword;
+          });
+        },
+        icon: _isSecuredPassword
+            ? const Icon(Icons.visibility)
+            : const Icon(Icons.visibility_off),
+        color: Colors.grey);
   }
-
 }
