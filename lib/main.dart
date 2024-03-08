@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:reportaroad/pages/dash.dart';
+import 'package:reportaroad/utils/order_tracking_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:reportaroad/pages/loginpage.dart';
 import 'pages/loginpage.dart';
@@ -40,7 +41,8 @@ class MyApp extends StatelessWidget {
       initialRoute: "/",
       routes: {
        // home: (JwtDecoder.isExpired(token) == false)?Dashboard(token: token):Loginpage()
-          '/': (context) => const Dashboard(),
+          '/': (context) => const OrderTrackingPagState(),
+          // '/': (context) => const Dashboard(),
         // '/': (context) => const InitialPage(),
         // '/loginpage': (context) =>  Loginpage(),
         // '/signuppage': (context) => const Signuppage(),
