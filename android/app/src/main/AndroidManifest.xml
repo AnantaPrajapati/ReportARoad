@@ -1,4 +1,13 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.user location">
+        <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<uses-feature android:name="android.hardware.camera" android:required="true" />
+
+    <!-- <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/> -->
     <application
         android:label="reportaroad"
         android:name="${applicationName}"
@@ -30,7 +39,10 @@
             android:name="flutterEmbedding"
             android:value="2" />
              <meta-data
-            android:name="com.google.android.geo.AIzaSyDyJDsZEDcxL0Jt5Jkgg9cZEM7Yzcp4_wQ"
-            android:value="AIzaSyDyJDsZEDcxL0Jt5Jkgg9cZEM7Yzcp4_wQ" />
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBO5Qmw2Hd8TIVms7buZsySefpCsVy1n4Y" />
     </application>
 </manifest>
+
+
+<!-- AIzaSyBO5Qmw2Hd8TIVms7buZsySefpCsVy1n4Y-->

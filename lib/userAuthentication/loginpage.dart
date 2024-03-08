@@ -3,14 +3,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:reportaroad/pages/dash.dart';
-import 'package:reportaroad/pages/signuppage.dart';
+import 'package:reportaroad/pages/home.dart';
+import 'package:reportaroad/userAuthentication/forgetPass.dart';
+import 'package:reportaroad/userAuthentication/signuppage.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'pages/HOUpass.dart';
-// import 'package:reportaroad/pages/verify.dart';
-
-// import 'package:url_launcher/url_launcher.dart'; // Import url_launcher package
-
-// import 'package:reportaroad/server/http.dart' as http;
 
 class Loginpage extends StatefulWidget {
   const Loginpage({super.key});
@@ -43,20 +40,44 @@ class _LoginpageState extends State<Loginpage> {
         "password": passwordController.text
       };
 
-      var response = await http.post(Uri.parse('http://localhost:3000/login'),
+      var response = await http.post(Uri.parse('http://192.168.0.103:3000/login'),
           headers: {"Content-type": "application/json"},
           body: jsonEncode(reqBody));
 
-      var jsonResponse = jsonDecode(response.body);
-      print(jsonResponse['status']);
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        print(jsonResponse['status']);
 
-      if (jsonResponse['status']) {
-        var myToken = jsonResponse['token'];
-        prefs.setString('token', myToken);
+        if (jsonResponse['status']) {
+          var myToken = jsonResponse['token'];
+          prefs.setString('token', myToken);
+          // ignore: use_build_context_synchronously
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Home(token: myToken)),
+          );
+        }
+      } else {
+        // Handle error response from the server
+        var errorMessage =
+            jsonDecode(response.body)['error']; // Extract error message
         // ignore: use_build_context_synchronously
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Dashboard(token: myToken)),
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(errorMessage),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
         );
       }
     } else {
@@ -77,8 +98,8 @@ class _LoginpageState extends State<Loginpage> {
           ),
           Container(
             constraints: const BoxConstraints(
-              maxWidth: 200, // Set the maximum width
-              maxHeight: 200, // Set the maximum height
+              maxWidth: 200,
+              maxHeight: 200, 
             ),
             child: Image.asset(
               "assets/images/login.png",
@@ -142,7 +163,6 @@ class _LoginpageState extends State<Loginpage> {
                     ),
                   ),
                 ),
-               
 
                 const SizedBox(
                   height: 20.0,
@@ -167,7 +187,7 @@ class _LoginpageState extends State<Loginpage> {
                 const SizedBox(
                   height: 20.0,
                 ),
-                   Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
@@ -198,7 +218,7 @@ class _LoginpageState extends State<Loginpage> {
                   height: 5.0,
                 ),
                 const Row(
-                  children: [  
+                  children: [
                     Expanded(
                       child: Divider(
                         thickness: 1,
@@ -259,27 +279,26 @@ class _LoginpageState extends State<Loginpage> {
                 const SizedBox(
                   height: 5.0,
                 ),
-            
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Signuppage()),
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Text(
-                          "Forget Password?",
-                          style: TextStyle(
-                            color: Color(0xFF2C75FF),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ForgetPass()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Text(
+                      "Forget Password?",
+                      style: TextStyle(
+                        color: Color(0xFF2C75FF),
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                 
+                  ),
+                ),
               ],
             ),
           ),

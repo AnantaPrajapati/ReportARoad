@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:reportaroad/pages/loginpage.dart';
-import 'package:reportaroad/pages/verify.dart';
+import 'package:reportaroad/userAuthentication/loginpage.dart';
+import 'package:reportaroad/userAuthentication/verify.dart';
 
 class Signuppage extends StatefulWidget {
   const Signuppage({super.key});
@@ -39,7 +39,7 @@ void signupuser() async {
     };
 
     var response = await http.post(
-      Uri.parse('http://localhost:3000/signup'),
+      Uri.parse('http://192.168.0.103:3000/signup'),
       headers: {"Content-type": "application/json"},
       body: jsonEncode(regBody),
     );
@@ -55,26 +55,28 @@ void signupuser() async {
         );
       }
     } else {
-      // Handle error response from the server
-      // For example, show an error message to the user
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to sign up. Please try again later.'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    }
+        // Handle error response from the server
+        var errorMessage =
+            jsonDecode(response.body)['error']; // Extract error message
+        // ignore: use_build_context_synchronously
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(errorMessage),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
   } else {
     setState(() {
       _isNotValidate = true;

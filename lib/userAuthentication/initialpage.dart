@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:reportaroad/pages/loginpage.dart';
-import 'package:reportaroad/pages/signuppage.dart';
+import 'package:reportaroad/userAuthentication/loginpage.dart';
+import 'package:reportaroad/userAuthentication/signuppage.dart';
 class InitialPage extends StatelessWidget {
   const InitialPage({super.key});
 

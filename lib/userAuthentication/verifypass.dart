@@ -2,23 +2,20 @@ import 'package:flutter/material.dart';
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:reportaroad/pages/dash.dart';
-import 'package:reportaroad/pages/loginpage.dart';
+import 'package:reportaroad/userAuthentication/resetpass.dart';
 
-class Verify extends StatefulWidget {
+
+class VerifyPass extends StatefulWidget {
   final String verEmail;
-  const Verify({super.key,
+  const VerifyPass({super.key,
   required this.verEmail});
   @override 
   // ignore: library_private_types_in_public_api
-  _VerifyState createState() => _VerifyState();
+  _VerifyPassState createState() => _VerifyPassState();
 
 }
 
-
-
-
-class _VerifyState extends State<Verify> {
+class _VerifyPassState extends State<VerifyPass> {
    TextEditingController digitController = TextEditingController();
    bool _isNotValidate = false;
    
@@ -30,7 +27,7 @@ class _VerifyState extends State<Verify> {
     };
 
     var response = await http.post(
-      Uri.parse('http://localhost:3000/verifyEmail'),
+      Uri.parse('http:// 192.168.0.103:3000/verifyResetOtp'),
       headers: {"Content-type": "application/json"},
       body: jsonEncode(regBody),
     );
@@ -42,30 +39,32 @@ class _VerifyState extends State<Verify> {
       if (jsonResponse['status']) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Loginpage()),
+          MaterialPageRoute(builder: (context) => ResetPass(verEmail: widget.verEmail)),
         );
       }
     } else {
-      // Handle error response from the server
-      // For example, show an error message to the user
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to verify email. Please try again later.'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    }
+        // Handle error response from the server
+        var errorMessage =
+            jsonDecode(response.body)['error']; // Extract error message
+        // ignore: use_build_context_synchronously
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(errorMessage),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
   } else {
     setState(() {
       _isNotValidate = true;
@@ -97,7 +96,7 @@ class _VerifyState extends State<Verify> {
             height: 50.0,
           ),
           const Text(
-            "Verification",
+            "Enter Otp",
             style: TextStyle(
               fontSize: 25,
               fontWeight: FontWeight.bold,
