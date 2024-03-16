@@ -7,7 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher_string.dart';
 
 class Userlocationpage extends StatefulWidget {
-  const Userlocationpage({super.key});
+   final Function(String, String, String) onLocationSelected;
+  const Userlocationpage({super.key, required this.onLocationSelected});
   @override
   // ignore: library_private_types_in_public_api
   _UserlocationpageState createState() => _UserlocationpageState();
@@ -17,7 +18,7 @@ class _UserlocationpageState extends State<Userlocationpage> {
   String locationMessage = 'Current location of user';
   late String lat;
   late String long;
-  late String address = 'Searching...';
+  late String address = '';
 
 
   Future<Position> _getCurrentLocation() async {
@@ -118,7 +119,7 @@ Future<void> _openMap(String lat, String long) async {
                       setState(() {
                         locationMessage = 'Latitude: $lat, Longitude: $long';
                       });
-                      _liveLocation();
+                      widget.onLocationSelected(address, lat, long);
                     });
                   },
                 ),
@@ -131,10 +132,10 @@ Future<void> _openMap(String lat, String long) async {
                   ),
                   style: ElevatedButton.styleFrom(
                     // ignore: deprecated_member_use
-                    primary: const Color(0xFF2C75FF), // BUTTON COLOR
+                    primary: const Color(0xFF2C75FF), 
                     // ignore: deprecated_member_use
-                    onPrimary: Colors.white, // text color
-                    minimumSize: const Size(double.infinity, 50), // button size
+                    onPrimary: Colors.white, 
+                    minimumSize: const Size(double.infinity, 50), 
                   ),
                   onPressed: () {
                     if (lat != null && long != null) {

@@ -20,7 +20,7 @@ class BottomNav extends StatelessWidget {
     return Container(
         color: Color(0xFF2C75FF),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 20),
+          padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10),
           child: GNav(
             backgroundColor: Color(0xFF2C75FF),
             color: Colors.white,

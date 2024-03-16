@@ -46,8 +46,8 @@ class MyApp extends StatelessWidget {
           // '/': (context) => const OrderTrackingPagState(),
           //  '/': (context) => const Userlocationpage(),
           //  '/': (context) => const Dashboard(),
-            // '/': (context) => const Home(),
-              '/': (context) => Map(),
+            '/': (context) => const Home(),
+              // '/': (context) => Map(),
         // '/': (context) => const InitialPage(),
       //   '/':(context) => const VerifyPass(verEmail: '',)
       //   '/loginpage': (context) =>  Loginpage(),

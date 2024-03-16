@@ -1,11 +1,13 @@
 import 'dart:io';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:reportaroad/utils/userlocation.dart';
 
-import '../utils/order_tracking_page.dart';
+import '../utils/SeverityDropdown.dart';
+import '../utils/ImageSelection.dart';
 import '../utils/map.dart';
 
 class Report extends StatefulWidget {
@@ -19,59 +21,65 @@ class _ReportState extends State<Report> {
   final locationController = TextEditingController();
   final severityController = TextEditingController();
   final descController = TextEditingController();
-  final imageController = TextEditingController(); // Add controller for image
+  final imageController = TextEditingController(); 
+   bool _isNotValidate = false;
   final double horizontalPadding = 40;
   final double verticalPadding = 25;
 
-  XFile? _imageFile;
-Future<void> _getImageFromCamera() async {
-  final image = await ImagePicker().pickImage(source: ImageSource.camera);
-  setState(() {
-    _imageFile = image;
-    if (_imageFile != null) {
-      // Convert image to base64
-      _convertImageToBase64();
-    }
-  });
-}
+  GoogleMapController? mapController;
 
-Future<void> _convertImageToBase64() async {
-  if (_imageFile != null) {
-    List<int> imageBytes = await _imageFile!.readAsBytes();
-    String base64Image = base64Encode(imageBytes);
+  XFile? _imageFile;
+  Future<void> _getImageFromCamera() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.camera);
     setState(() {
-      imageController.text = base64Image;
+      _imageFile = image;
+      if (_imageFile != null) {
+        // Convert image to base64
+        _convertImageToBase64();
+      }
     });
   }
-}
 
-
-  void submitReport() {
-    String location = locationController.text;
-    String severity = severityController.text;
-    String desc = descController.text;
-    String imagePath = imageController.text; // Get image path from controller
-    bool _isNotValidate = false;
-
-    // You can implement your submission logic here
+  Future<void> _convertImageToBase64() async {
+    if (_imageFile != null) {
+      List<int> imageBytes = await _imageFile!.readAsBytes();
+      String base64Image = base64Encode(imageBytes);
+      setState(() {
+        imageController.text = base64Image;
+      });
+    }
   }
 
-  Future<void> submit() async {
+  void setLocation(String address, String latitude, String longitude) {
+    setState(() {
+      locationController.text = '$address($latitude, $longitude)';
+    });
+  }
+
+  // void submitReport() {
+  //   String location = locationController.text;
+  //   String severity = severityController.text;
+  //   String desc = descController.text;
+  //   String imagePath = imageController.text;
+  //   bool _isNotValidate = false;
+  // }
+
+  void submit() async {
     if (locationController.text.isNotEmpty &&
         severityController.text.isNotEmpty &&
         descController.text.isNotEmpty &&
-        imageController.text.isNotEmpty) { // Check if image path is not empty
-      var regBody = {
+        imageController.text.isNotEmpty) {
+      var reqBody = {
         "location": locationController.text,
         "severity": severityController.text,
         "desc": descController.text,
-        "image": imageController.text, // Include image path in request body
+        "image": imageController.text, 
       };
 
       var response = await http.post(
         Uri.parse('http://192.168.0.103:3000/report'),
         headers: {"Content-type": "application/json"},
-        body: jsonEncode(regBody),
+        body: jsonEncode(reqBody),
       );
 
       if (response.statusCode == 200) {
@@ -107,162 +115,193 @@ Future<void> _convertImageToBase64() async {
       }
     } else {
       setState(() {
-        // _isNotValidate = true;
+        _isNotValidate = true;
       });
     }
   }
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: SafeArea(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              color: const Color(0xFF2C75FF),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: horizontalPadding,
-                vertical: verticalPadding,
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                color: const Color(0xFF2C75FF),
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        "Report",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
+                  vertical: 20,
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          "Report",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20.0),
-                   Userlocationpage(), 
-                  //  
-                  // OrderTrackingPage(), 
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Location',
-                          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 20.0),
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: Container(
+                        height: 400,
+                        width: double.infinity,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onVerticalDragUpdate: (_) {},
+                          child: Map(mapController: mapController),
                         ),
-                        SizedBox(height: 10.0),
-                        TextFormField(
-                          controller: locationController,
-                          decoration: InputDecoration(
-                            hintText: 'Enter location',
-                          ),
-                        ),
-                        SizedBox(height: 20.0),
-                        Text(
-                          'Severity',
-                          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                        ),
-                        TextFormField(
-                          controller: severityController,
-                          decoration: InputDecoration(
-                            hintText: 'Enter severity',
-                          ),
-                        ),
-                        SizedBox(height: 20.0),
-                        Text(
-                          'Description',
-                          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                        ),
-                        TextFormField(
-                          controller: descController,
-                          decoration: InputDecoration(
-                            hintText: 'Enter description',
-                          ),
-                          maxLines: 3,
-                        ),
-                        SizedBox(height: 20.0),
-                        ElevatedButton(
-                          onPressed: () {
-                            _getImageFromCamera();
-                          },
-                          child: const Text(
-                            "Attach image",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            primary: const Color(0xFF2C75FF),
-                            onPrimary: Colors.white,
-                            minimumSize: const Size(double.infinity, 50),
-                          ),
-                        ),
-                        SizedBox(height: 20),
-                        // Text form field to hold the base64 encoded image
-                        TextFormField(
-                          controller: imageController,
-                          decoration: InputDecoration(
-                            labelText: 'Image',
-                            border: OutlineInputBorder(),
-                          ),
-                          maxLines: 5,
-                          readOnly: true,
-                        ),
-                        // SizedBox(height: 20),
-                        // ElevatedButton(
-                        //   onPressed: () {
-      
-                        //     String imageData = imageController.text;
-                      
-                        //     print('Sending image data to server: $imageData');
-                        //   },
-                        //   child: const Text(
-                        //     "Send to server",
-                        //     style: TextStyle(fontSize: 16),
-                        //   ),
-                        //   style: ElevatedButton.styleFrom(
-                        //     primary: const Color(0xFF2C75FF),
-                        //     onPrimary: Colors.white,
-                        //     minimumSize: const Size(double.infinity, 50),
-                        //   ),
-                        // ),
-                        SizedBox(height: 20.0),
-                        ElevatedButton(
-                          onPressed: () {
-                            submit();
-                          },
-                          child: const Text(
-                            "Submit",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            primary: const Color(0xFF2C75FF),
-                            onPrimary: Colors.white,
-                            minimumSize: const Size(double.infinity, 50),
-                          ),
-                        ),
-                        SizedBox(height: 20.0),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                    Userlocationpage(
+                        onLocationSelected: (address, latitude, longitude) {
+                      setLocation(address, latitude, longitude);
+                    }),
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Location',
+                            style: TextStyle(
+                                fontSize: 18.0,
+                                 fontWeight: FontWeight.bold
+                                 ),
+                          ),
+                          SizedBox(height: 10.0),
+                          TextFormField(
+                            controller: locationController,
+                            decoration: InputDecoration(
+                              hintText: 'Enter location',
+                            ),
+                          ),
+                          SizedBox(height: 20.0),
+                          Text(
+                            'Severity',
+                            style: TextStyle(
+                                fontSize: 18.0, 
+                                fontWeight: FontWeight.bold),
+                          ),
+                          SeverityDropdown(),
+
+                          // TextFormField(
+                          //   controller: severityController,
+                          //   decoration: InputDecoration(
+                          //     hintText: 'Enter severity',
+                          //   ),
+                          // ),
+                          SizedBox(height: 20.0),
+                          Text(
+                            'Description',
+                            style: TextStyle(
+                                fontSize: 18.0, fontWeight: FontWeight.bold),
+                          ),
+                          TextFormField(
+                            controller: descController,
+                            decoration: InputDecoration(
+                              hintText: 'Enter description',
+                            ),
+                            maxLines: 2,
+                          ),
+                          // SizedBox(height: 20.0),
+                          // ElevatedButton(
+                          //   onPressed: () {
+                          //     _getImageFromCamera();
+                          //   },
+                          //   child: const Text(
+                          //     "Attach image",
+                          //     style: TextStyle(fontSize: 16),
+                          //   ),
+                          //   style: ElevatedButton.styleFrom(
+                          //     primary: const Color(0xFF2C75FF),
+                          //     onPrimary: Colors.white,
+                          //     minimumSize: const Size(double.infinity, 50),
+                          //   ),
+                          // ),
+                          // // SizedBox(height: 20),
+
+                          // TextFormField(
+                          //   controller: imageController,
+                          //   decoration: InputDecoration(
+                          //     labelText: 'Image',
+                          //     border: OutlineInputBorder(),
+                          //   ),
+                          //   maxLines: 5,
+                          //   readOnly: true,
+                          // ),
+
+                          SizedBox(height: 20),
+                          ImageSelectionFormField(
+                            controller: imageController,
+                            onImageSelected: () {},
+                          ),
+
+                          // SizedBox(height: 20),
+                          // ElevatedButton(
+                          //   onPressed: () {
+
+                          //     String imageData = imageController.text;
+
+                          //     print('Sending image data to server: $imageData');
+                          //   },
+                          //   child: const Text(
+                          //     "Send to server",
+                          //     style: TextStyle(fontSize: 16),
+                          //   ),
+                          //   style: ElevatedButton.styleFrom(
+                          //     primary: const Color(0xFF2C75FF),
+                          //     onPrimary: Colors.white,
+                          //     minimumSize: const Size(double.infinity, 50),
+                          //   ),
+                          // ),
+                          SizedBox(height: 20.0),
+                          ElevatedButton(
+                            onPressed: () {
+                              submit();
+                            },
+                            child: const Text(
+                              "Submit",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              primary: const Color(0xFF2C75FF),
+                              onPrimary: Colors.white,
+                              minimumSize: const Size(double.infinity, 50),
+                            ),
+                          ),
+                          SizedBox(height: 20.0),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
