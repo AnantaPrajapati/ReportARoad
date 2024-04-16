@@ -27,7 +27,7 @@ class _VerifyPassState extends State<VerifyPass> {
     };
 
     var response = await http.post(
-      Uri.parse('http:// 192.168.0.103:3000/verifyResetOtp'),
+      Uri.parse('http://192.168.0.103:3000/verifyResetOtp'),
       headers: {"Content-type": "application/json"},
       body: jsonEncode(regBody),
     );

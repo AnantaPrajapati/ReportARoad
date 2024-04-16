@@ -4,24 +4,23 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:reportaroad/main.dart';
+import 'package:reportaroad/utils/TitleDropdown.dart';
 import 'package:reportaroad/utils/userlocation.dart';
-
-import '../utils/SeverityDropdown.dart';
 import '../utils/ImageSelection.dart';
 import '../utils/map.dart';
 
 
-class Report extends StatefulWidget {
+class IncidentReport extends StatefulWidget {
   final String email;
-  const Report({super.key, required this.email});
+  const IncidentReport({super.key, required this.email});
 
   @override
-  State<Report> createState() => _ReportState();
+  State<IncidentReport> createState() => _ReportState();
 }
 
-class _ReportState extends State<Report> {
+class _ReportState extends State<IncidentReport> {
   final locationController = TextEditingController();
-  final severityController = TextEditingController();
+  final titleController = TextEditingController();
   final descController = TextEditingController();
   String? imageUrl;
   bool _isNotValidate = false;
@@ -30,158 +29,32 @@ class _ReportState extends State<Report> {
 
   GoogleMapController? mapController;
 
-  // XFile? _imageFile;
-  // Future<void> _getImageFromCamera() async {
-  //   final image = await ImagePicker().pickImage(source: ImageSource.camera);
-  //   setState(() {
-  //     _imageFile = image;
-  //     if (_imageFile != null) {
-  //       // Convert image to base64
-  //       _convertImageToBase64();
-  //     }
-  //   });
-  // }
-
-  // Future<void> _convertImageToBase64() async {
-  //   if (_imageFile != null) {
-  //     List<int> imageBytes = await _imageFile!.readAsBytes();
-  //     String base64Image = base64Encode(imageBytes);
-  //     setState(() {
-  //       imageController.text = base64Image;
-  //     });
-  //   }
-  // }
-
   void setLocation(String address, String latitude, String longitude) {
     setState(() {
       locationController.text = '$address($latitude, $longitude)';
     });
   }
-// void submit() async {
-//   setState(() {
-//     _isNotValidate = false; 
-//   });
 
-//   if (locationController.text.isNotEmpty &&
-//       severityController.text.isNotEmpty &&
-//       descController.text.isNotEmpty &&
-//       imageUrl != null) {
-//     showDialog(
-//       context: context,
-//       barrierDismissible: false,
-//       builder: (BuildContext context) {
-//         return Dialog(
-//           child: Padding(
-//             padding: EdgeInsets.all(20.0),
-//             child: Row(
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 CircularProgressIndicator(),
-//                 SizedBox(width: 20.0),
-//                 Text("Submitting report..."),
-//               ],
-//             ),
-//           ),
-//         );
-//       },
-//     );
-
-//     var reqBody = {
-//       "email": widget.email,
-//       "location": locationController.text,
-//       "severity": severityController.text,
-//       "desc": descController.text,
-//       "image": imageUrl!,
-//     };
-
-//     try {
-//             var response = await http.post(Uri.parse('${serverBaseUrl}report'),
-//           headers: {"Content-type": "application/json"},
-//           body: jsonEncode(reqBody));
-
-//       // Navigator.pop(context); 
-
-//       if (response.statusCode == 200) {
-//         locationController.clear();
-//         severityController.clear();
-//         descController.clear();
-//         // Navigator.pop(context);
-//         var jsonResponse = jsonDecode(response.body);
-//         if (jsonResponse['success'] != null && jsonResponse['success']) {
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             SnackBar(
-//               content: Text('Report submitted successfully'),
-//               backgroundColor: Colors.green,
-//             ),
-//           );
-//         }
-//       } else {
-//         var errorMessage = jsonDecode(response.body)['error'];
-//         showDialog(
-//           context: context,
-//           builder: (BuildContext context) {
-//             return AlertDialog(
-//               title: const Text('Error'),
-//               content: Text(errorMessage),
-//               actions: <Widget>[
-//                 TextButton(
-//                   onPressed: () {
-//                     Navigator.of(context).pop();
-//                   },
-//                   child: const Text('OK'),
-//                 ),
-//               ],
-//             );
-//           },
-//         );
-//       }
-//     } catch (error) {
-//       print("Error submitting report: $error");
-//       Navigator.pop(context);
-//       showDialog(
-//         context: context,
-//         builder: (BuildContext context) {
-//           return AlertDialog(
-//             title: const Text('Error'),
-//             content: Text("An error occurred while submitting the report."),
-//             actions: <Widget>[
-//               TextButton(
-//                 onPressed: () {
-//                   Navigator.of(context).pop();
-//                 },
-//                 child: const Text('OK'),
-//               ),
-//             ],
-//           );
-//         },
-//       );
-//     }
-//   } else {
-//     setState(() {
-//       _isNotValidate = true;
-//     });
-//   }
-// }
 void submit() async {
     if (locationController.text.isNotEmpty &&
-      severityController.text.isNotEmpty &&
+      titleController.text.isNotEmpty &&
       descController.text.isNotEmpty &&
       imageUrl != null){
       var reqBody = {
         "email": widget.email,
       "location": locationController.text,
-      "severity": severityController.text,
+      "title": titleController.text,
       "desc": descController.text,
       "image": imageUrl!,
       };
 
-      var response = await http.post(Uri.parse('${serverBaseUrl}report'),
+      var response = await http.post(Uri.parse('${serverBaseUrl}incident'),
           headers: {"Content-type": "application/json"},
           body: jsonEncode(reqBody));
 
       if (response.statusCode == 200) {
         locationController.clear();
-        severityController.clear();
+        titleController.clear();
         descController.clear();
         var jsonResponse = jsonDecode(response.body);
         print(jsonResponse['status']);
@@ -292,6 +165,17 @@ void submit() async {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          SizedBox(height: 20.0),
+                           Text(
+                            'Title',
+                            style: TextStyle(
+                                fontSize: 18.0, fontWeight: FontWeight.bold),
+                          ),
+                          TitleDropdown(
+                            onChanged: (newValue) {
+                              titleController.text = newValue;
+                            },
+                          ),
                           const Text(
                             'Location',
                             style: TextStyle(
@@ -306,24 +190,6 @@ void submit() async {
                           ),
                           SizedBox(height: 20.0),
                           Text(
-                            'Severity',
-                            style: TextStyle(
-                                fontSize: 18.0, fontWeight: FontWeight.bold),
-                          ),
-                          SeverityDropdown(
-                            onChanged: (newValue) {
-                              severityController.text = newValue;
-                            },
-                          ),
-
-                          // TextFormField(
-                          //   controller: severityController,
-                          //   decoration: InputDecoration(
-                          //     hintText: 'Enter severity',
-                          //   ),
-                          // ),
-                          SizedBox(height: 20.0),
-                          Text(
                             'Description',
                             style: TextStyle(
                                 fontSize: 18.0, fontWeight: FontWeight.bold),
@@ -335,33 +201,7 @@ void submit() async {
                             ),
                             maxLines: 2,
                           ),
-                          // SizedBox(height: 20.0),
-                          // ElevatedButton(
-                          //   onPressed: () {
-                          //     _getImageFromCamera();
-                          //   },
-                          //   child: const Text(
-                          //     "Attach image",
-                          //     style: TextStyle(fontSize: 16),
-                          //   ),
-                          //   style: ElevatedButton.styleFrom(
-                          //     primary: const Color(0xFF2C75FF),
-                          //     onPrimary: Colors.white,
-                          //     minimumSize: const Size(double.infinity, 50),
-                          //   ),
-                          // ),
-                          // // SizedBox(height: 20),
-
-                          // TextFormField(
-                          //   controller: imageController,
-                          //   decoration: InputDecoration(
-                          //     labelText: 'Image',
-                          //     border: OutlineInputBorder(),
-                          //   ),
-                          //   maxLines: 5,
-                          //   readOnly: true,
-                          // ),
-
+                  
                           SizedBox(height: 20),
                           ImageSelectionFormField(
                             onImageUploaded: (imageUrl) {
@@ -372,24 +212,7 @@ void submit() async {
                           ),
                           //anantaprajapati0@gmail.com
 
-                          // SizedBox(height: 20),
-                          // ElevatedButton(
-                          //   onPressed: () {
-
-                          //     String imageData = imageController.text;
-
-                          //     print('Sending image data to server: $imageData');
-                          //   },
-                          //   child: const Text(
-                          //     "Send to server",
-                          //     style: TextStyle(fontSize: 16),
-                          //   ),
-                          //   style: ElevatedButton.styleFrom(
-                          //     primary: const Color(0xFF2C75FF),
-                          //     onPrimary: Colors.white,
-                          //     minimumSize: const Size(double.infinity, 50),
-                          //   ),
-                          // ),
+                          
                           SizedBox(height: 20.0),
                           ElevatedButton(
                             onPressed: () {

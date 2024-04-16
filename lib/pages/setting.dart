@@ -83,114 +83,110 @@ class _SettingPageState extends State<SettingPage> {
 // }
 
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFF2C75FF),
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF2C75FF),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: 20
               ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Settings',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: horizontalPadding,
-                  vertical: 20
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const SizedBox(height: 20.0),
+                    const Text(
+                      'Firstname',
+                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 5.0),
+                    TextFormField(
+                      controller: firstnameController,
+                      enabled: false, // Set enabled to false to disable editing
+                      decoration: const InputDecoration(),
+                    ),
+                    SizedBox(height: 20.0),
                     Text(
-                      'Settings',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
+                      'Lastname',
+                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                    ),
+                    TextFormField(
+                      controller: lastnameController,
+                      enabled: false, // Set enabled to false to disable editing
+                      decoration: InputDecoration(),
+                    ),
+                    SizedBox(height: 20.0),
+                    Text(
+                      'Username',
+                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                    ),
+                    TextFormField(
+                      controller: usernameController,
+                      enabled: false, // Set enabled to false to disable editing
+                      decoration: InputDecoration(),
+                    ),
+                    SizedBox(height: 20.0),
+                    Text(
+                      'Email',
+                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                    ),
+                    TextFormField(
+                      controller: emailController,
+                      enabled: false, // Set enabled to false to disable editing
+                      decoration: InputDecoration(),
+                    ),
+                    SizedBox(height: 20.0),
+                    
+                    ElevatedButton(
+                      onPressed: () {
+                        
+                      },
+                      child: const Text(
+                        "Submit",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        primary: const Color(0xFF2C75FF),
+                        onPrimary: Colors.white,
+                        minimumSize: const Size(double.infinity, 50),
                       ),
                     ),
+                    SizedBox(height: 20.0),
                   ],
                 ),
               ),
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 20.0),
-                      const Text(
-                        'Firstname',
-                        style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 5.0),
-                      TextFormField(
-                        controller: firstnameController,
-                        decoration: const InputDecoration(
-                        ),
-                      ),
-                      SizedBox(height: 20.0),
-                      Text(
-                        'Lastname',
-                        style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                      ),
-                      TextFormField(
-                        controller: lastnameController,
-                        decoration: InputDecoration(
-                        
-                        ),
-                      ),
-                      SizedBox(height: 20.0),
-                      Text(
-                        'Username',
-                        style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                      ),
-                      TextFormField(
-                        controller: usernameController,
-                        decoration: InputDecoration(
-                         
-                        ),
-                       
-                      ),
-                        SizedBox(height: 20.0),
-                      Text(
-                        'Email',
-                        style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                      ),
-                      TextFormField(
-                        controller: emailController,
-                        decoration: InputDecoration(
-                         
-                        ),
-                       
-                      ),
-                      SizedBox(height: 20.0),
-                      
-                      ElevatedButton(
-                        onPressed: () {
-                          
-                        },
-                        child: const Text(
-                          "Submit",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          primary: const Color(0xFF2C75FF),
-                          onPrimary: Colors.white,
-                          minimumSize: const Size(double.infinity, 50),
-                        ),
-                      ),
-                      SizedBox(height: 20.0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

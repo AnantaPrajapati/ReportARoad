@@ -23,14 +23,16 @@ class _ResetPassState extends State<ResetPass> {
   bool _isSecuredPassword = true;
   
   void resetpass() async {
-    if ( passwordController.text.isNotEmpty && confirmpasswordController.text.isNotEmpty) {
+    if ( passwordController.text.isNotEmpty &&
+     confirmpasswordController.text.isNotEmpty) {
       var reqBody = {
         "email": widget.verEmail,
         "password": passwordController.text,
       "Cpassword": confirmpasswordController.text
       };
 
-      var response = await http.post(Uri.parse('http://192.168.0.103:3000/verifyResetOtp'),
+      var response = await http.post(
+        Uri.parse('http://192.168.0.103:3000/resetPassword'),
           headers: {"Content-type": "application/json"},
           body: jsonEncode(reqBody));
 
@@ -39,7 +41,7 @@ class _ResetPassState extends State<ResetPass> {
       var jsonResponse = jsonDecode(response.body);
       print(jsonResponse['status']);
       
-      if (jsonResponse['status']) {
+    if (jsonResponse['status'] != null && jsonResponse['status']) {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => Loginpage()),

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:reportaroad/pages/BottomNav.dart'; // Update with the correct import path
+import 'package:reportaroad/pages/BottomNav.dart'; 
 import 'package:reportaroad/pages/Report.dart';
 import 'package:reportaroad/pages/setting.dart';
 import 'package:reportaroad/utils/incident.dart';
-import 'package:reportaroad/utils/reportsection.dart'; // Import the necessary file for ReportSection
+import 'package:reportaroad/utils/reportsection.dart'; 
 import 'package:reportaroad/utils/EmergencyNumber.dart';
-import 'package:reportaroad/utils/userlocation.dart'; // Import the necessary file for EmergencyNumber
+import 'package:reportaroad/utils/userlocation.dart'; 
+import 'package:jwt_decoder/jwt_decoder.dart';
+
 
 class Home extends StatelessWidget {
   final token;
@@ -27,14 +29,22 @@ class _HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<_HomeScreen> {
   int _selectedIndex = 0;
-
   late double height;
   late double width;
-  // Padding constants
   final double horizontalPadding = 40;
   final double verticalPadding = 25;
 
-  // Report box
+  late String email;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Map<String,dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
+
+    email = jwtDecodedToken['email'];
+  }
+
+
   List myReportSection = [
     // Reports
     ["Report Incidents", "assets/images/warning.png", true],
@@ -90,9 +100,9 @@ class _HomeScreenState extends State<_HomeScreen> {
               padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text("Welcome home,"),
-                  Text("ReportARoad", style: TextStyle(fontSize: 25)),
+                  Text(email, style: TextStyle(fontSize: 25)),
                 ],
               ),
             ),
@@ -155,7 +165,7 @@ class _HomeScreenState extends State<_HomeScreen> {
             ),
             Expanded(
               child: GridView.builder(
-                itemCount: 2, // Assuming there are two items in myReportSection
+                itemCount: 2, 
                 padding: const EdgeInsets.all(25),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
@@ -191,7 +201,7 @@ class _HomeScreenState extends State<_HomeScreen> {
         ),
       ),
       ),
-      const Report(),
+      Report(email: email),
       // const Userlocationpage(),
       const SettingPage()
     ];

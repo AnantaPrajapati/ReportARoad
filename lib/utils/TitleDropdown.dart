@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 
-class SeverityDropdown extends StatefulWidget {
+class TitleDropdown extends StatefulWidget {
   final ValueChanged<String> onChanged;
 
-  const SeverityDropdown({Key? key, required this.onChanged}) : super(key: key);
+  const TitleDropdown({Key? key, required this.onChanged}) : super(key: key);
 
   @override
-  _SeverityDropdownState createState() => _SeverityDropdownState();
+  _TitleDropdownState createState() => _TitleDropdownState();
 }
 
-class _SeverityDropdownState extends State<SeverityDropdown> {
-  String _selectedSeverity = 'Low'; 
+class _TitleDropdownState extends State<TitleDropdown> {
+  String _selectedTitle = 'Low'; 
 
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: _selectedSeverity,
-      items: <String>['Low', 'Medium', 'High']
+      value: _selectedTitle,
+      items: <String>['Accident', 'Traffic Violation', 'Burglar']
           .map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,
@@ -25,7 +25,7 @@ class _SeverityDropdownState extends State<SeverityDropdown> {
       }).toList(),
       onChanged: (String? newValue) {
         setState(() {
-          _selectedSeverity = newValue!;
+          _selectedTitle = newValue!;
           widget.onChanged(newValue);
         });
       },

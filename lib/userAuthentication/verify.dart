@@ -29,7 +29,7 @@ class _VerifyState extends State<Verify> {
     };
 
     var response = await http.post(
-      Uri.parse('http:// 192.168.0.103:3000/verifyEmail'),
+      Uri.parse('http://192.168.0.103:3000/verifyEmail'),
       headers: {"Content-type": "application/json"},
       body: jsonEncode(regBody),
     );
