@@ -47,7 +47,7 @@ class _MapState extends State<Map> {
     }
   }
 
-
+// AIzaSyBO5Qmw2Hd8TIVms7buZsySefpCsVy1n4Y
 
 void _goToCurrentLocation() async {
   // Get current location

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:reportaroad/pages/BottomNav.dart'; 
 import 'package:reportaroad/pages/Report.dart';
 import 'package:reportaroad/pages/setting.dart';
@@ -7,32 +8,39 @@ import 'package:reportaroad/utils/reportsection.dart';
 import 'package:reportaroad/utils/EmergencyNumber.dart';
 import 'package:reportaroad/utils/userlocation.dart'; 
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:reportaroad/utils/slide_menu.dart';
 
 
 class Home extends StatelessWidget {
   final token;
-  const Home({@required this.token, Key? key}) : super(key: key);
+  String id;
+   Home({required this.token, required this.id, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return _HomeScreen(token: token);
+    return _HomeScreen(token: token, id: id);
   }
 }
 
 class _HomeScreen extends StatefulWidget {
   final token;
-  const _HomeScreen({@required this.token, Key? key}) : super(key: key);
+  String id;
+   _HomeScreen({required this.token, required this.id, Key? key}) : super(key: key);
 
   @override
   State<_HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<_HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
   late double height;
   late double width;
   final double horizontalPadding = 40;
   final double verticalPadding = 25;
+  late bool hasAskedForLocationPermission;
 
   late String email;
   @override
@@ -40,10 +48,71 @@ class _HomeScreenState extends State<_HomeScreen> {
     // TODO: implement initState
     super.initState();
     Map<String,dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
-
     email = jwtDecodedToken['email'];
+     hasAskedForLocationPermission = false;
+    _checkLocationPermission();
   }
 
+ 
+  Future<void> _checkLocationPermission() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // If the user has not been asked for location permission, ask for permission
+    if (!hasAskedForLocationPermission) {
+      try {
+        Position position = await _location();
+        print('Latitude: ${position.latitude}, Longitude: ${position.longitude}');
+      } catch (e) {
+        // Handle errors or denied permissions
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Location Permission'),
+            content: Text('$e'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+      // Update the flag to indicate that the user has been asked for location permission
+      setState(() {
+        hasAskedForLocationPermission = true;
+      });
+      // Save the updated flag in SharedPreferences
+      prefs.setBool('hasAskedForLocationPermission', true);
+    }
+  }
+
+  Future<Position> _location() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+    if (!serviceEnabled) {
+      throw Exception("Please enable the location");
+    }
+    permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception("Location permission is denied");
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception("Location permission is permanently denied!! Please enable location to access location");
+    }
+
+    Position position = await Geolocator.getCurrentPosition();
+    return position;
+  }
 
   List myReportSection = [
     // Reports
@@ -66,33 +135,37 @@ class _HomeScreenState extends State<_HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Custom app bar
-            Container(
-              decoration: BoxDecoration(
-                color: Color(0xFF2C75FF),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: horizontalPadding,
-                  vertical: 20,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Menu icon
-                    Image.asset(
-                      "assets/images/menu.png",
-                      height: 35,
-                      color: Colors.white,
-                    ),
-                    const Icon(
-                      Icons.notification_add,
-                      size: 35,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            // Container(
+            //   height: 100, // Adjust the height of the blue container
+            //   color: Color(0xFF2C75FF), // Blue color
+            //   child: Padding(
+            //     padding: EdgeInsets.symmetric(
+            //       horizontal: horizontalPadding,
+            //       vertical: 20,
+            //     ),
+            //     child: Row(
+            //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //       children: [
+            //         // Menu icon
+            //         IconButton(
+            //           icon: Image.asset(
+            //             "assets/images/menu.png",
+            //             height: 35,
+            //             color: Colors.white,
+            //           ),
+            //           onPressed: (){
+            //             _scaffoldKey.currentState?.openDrawer();
+            //           },
+            //         ),
+            //         const Icon(
+            //           Icons.notification_add,
+            //           size: 35,
+            //           color: Colors.white,
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
             const SizedBox(
               height: 5,
             ),
@@ -206,6 +279,45 @@ class _HomeScreenState extends State<_HomeScreen> {
       const SettingPage()
     ];
     return Scaffold(
+      key: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(100), // Adjust the height of the app bar
+        child: Container(
+          color: Color(0xFF2C75FF), // Blue color
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: 20,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Menu icon
+                IconButton(
+                  icon: Image.asset(
+                    "assets/images/menu.png",
+                    height: 35,
+                    color: Colors.white,
+                  ),
+                  onPressed: (){
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                ),
+                const Icon(
+                  Icons.notification_add,
+                  size: 35,
+                  color: Colors.white,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      drawer: Container(
+        width: MediaQuery.of(context).size.width * 0.7, // Set the width of the drawer
+        color: Colors.white, // White color
+        child: SlideMenu(id: widget.id),
+      ),
       body: IndexedStack(
         index: _selectedIndex,
         children: pages,

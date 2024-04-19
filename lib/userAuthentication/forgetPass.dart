@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:reportaroad/main.dart';
 import 'package:reportaroad/userAuthentication/verifypass.dart';
 
 
@@ -23,8 +24,7 @@ class _ForgetPassState extends State<ForgetPass> {
         "email": emailController.text,
       };
 
-      var response = await http.post(
-        Uri.parse('http://192.168.0.103:3000/forgetPassword'),
+      var response = await http.post(Uri.parse('${serverBaseUrl}forgetPassword'),
         headers: {"Content-type": "application/json"},
         body: jsonEncode(regBody),
       );

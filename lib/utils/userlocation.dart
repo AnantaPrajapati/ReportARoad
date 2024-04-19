@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -36,6 +37,11 @@ class _UserlocationpageState extends State<Userlocationpage> {
 
     if(permission == LocationPermission.deniedForever){
       return Future.error('Location permissions are permanently denied, we cannot request');
+    }
+    else{
+      Position currentPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+      log("latitude=${currentPosition.latitude.toString()}");
+      log("longitude=${currentPosition.longitude.toString()}");
     }
 
     return await Geolocator.getCurrentPosition();

@@ -1,21 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// import 'package:jwt_decoder/jwt_decoder.dart';
-// import 'package:reportaroad/pages/dash.dart';
-import 'package:reportaroad/pages/home.dart';
-// import 'package:reportaroad/userAuthentication/initialpage.dart';
 import 'package:reportaroad/userAuthentication/loginpage.dart';
-import 'package:reportaroad/userAuthentication/signuppage.dart';
-import 'package:reportaroad/userAuthentication/verify.dart';
-import 'package:reportaroad/userAuthentication/verifypass.dart';
-
-// import 'package:reportaroad/utils/order_tracking_page.dart';
-import 'package:reportaroad/utils/userlocation.dart';
 import 'package:reportaroad/utils/map.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
-String serverBaseUrl='http://192.168.0.102:3000/';
+String serverBaseUrl='http://192.168.254.6:3000/';
+late String token;
+// late Map<String, dynamic> decodedToken;
 
 Future<void> main() async {
   
@@ -25,8 +18,6 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  
-
   final token;
   const MyApp ({
   @required this.token,
@@ -35,6 +26,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //   if (token != null) {
+    //   Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(token);
+    //   DecodedToken = jwtDecodedToken;
+    // }
     return MaterialApp(
       debugShowCheckedModeBanner:false,
       themeMode: ThemeMode.light,

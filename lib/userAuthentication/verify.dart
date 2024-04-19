@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:reportaroad/main.dart';
 import 'package:reportaroad/userAuthentication/loginpage.dart';
 
 class Verify extends StatefulWidget {
@@ -28,8 +29,7 @@ class _VerifyState extends State<Verify> {
       "Otp": digitController.text
     };
 
-    var response = await http.post(
-      Uri.parse('http://192.168.0.103:3000/verifyEmail'),
+    var response = await http.post(Uri.parse('${serverBaseUrl}verifyEmail'),
       headers: {"Content-type": "application/json"},
       body: jsonEncode(regBody),
     );

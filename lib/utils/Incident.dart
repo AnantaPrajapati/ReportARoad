@@ -12,13 +12,13 @@ class ReportIncident extends StatefulWidget {
 class _ReportIncidentState extends State<ReportIncident> {
   late double height;
   late double width;
-  //padding constants
+  
   final double horizontalPadding = 40;
   final double verticalPadding = 25;
 
-  //report box
+
   List myIncidentSection = [
-    //Reports
+
     ["Accident", "assets/images/warning.png", true],
     ["Traffic Violation", "assets/images/emergency.png", true],
     ["Accident", "assets/images/warning.png", true],
@@ -36,7 +36,6 @@ class _ReportIncidentState extends State<ReportIncident> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Custom appbar
             Container(
               decoration: const BoxDecoration(
                 color: Color(0xFF2C75FF),
@@ -51,7 +50,6 @@ class _ReportIncidentState extends State<ReportIncident> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        // Navigate back to the previous page
                         Navigator.of(context).pop();
                       },
                       child: const Row(
@@ -61,13 +59,10 @@ class _ReportIncidentState extends State<ReportIncident> {
                             size: 35,
                             color: Colors.white,
                           ),
-                          SizedBox(
-                              width:
-                                  10), // Add some spacing between icon and text
+                          SizedBox(width: 10),
                         ],
                       ),
                     ),
-                    // Center the text vertically
                     const Expanded(
                       child: Center(
                         child: Text(
@@ -84,37 +79,37 @@ class _ReportIncidentState extends State<ReportIncident> {
               ),
             ),
 
-            // Add more widgets here if needed
             const SizedBox(
               height: 5,
             ),
 
             Expanded(
-  child: GridView.builder(
-    itemCount: myIncidentSection.length,
-    padding: const EdgeInsets.all(25),
-    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 2,
-    ),
-    itemBuilder: (context, index) {
-      return GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => IncidentReport(email: '',),
+              child: GridView.builder(
+                itemCount: myIncidentSection.length,
+                padding: const EdgeInsets.all(25),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                ),
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => IncidentReport(
+                            email: '',
+                          ),
+                        ),
+                      );
+                    },
+                    child: RerportSection(
+                      ReportSectionName: myIncidentSection[index][0],
+                      iconPath: myIncidentSection[index][1],
+                    ),
+                  );
+                },
+              ),
             ),
-          );
-        },
-        child: RerportSection(
-          ReportSectionName: myIncidentSection[index][0],
-          iconPath: myIncidentSection[index][1],
-        ),
-      );
-    },
-  ),
-),
-
           ],
         ),
       ),

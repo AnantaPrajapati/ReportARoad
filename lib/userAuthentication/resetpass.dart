@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:reportaroad/main.dart';
 import 'package:reportaroad/pages/dash.dart';
 import 'package:reportaroad/userAuthentication/loginpage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,8 +32,7 @@ class _ResetPassState extends State<ResetPass> {
       "Cpassword": confirmpasswordController.text
       };
 
-      var response = await http.post(
-        Uri.parse('http://192.168.0.103:3000/resetPassword'),
+      var response = await http.post(Uri.parse('${serverBaseUrl}resetPassword'),
           headers: {"Content-type": "application/json"},
           body: jsonEncode(reqBody));
 

@@ -176,6 +176,7 @@ void submit() async {
                               titleController.text = newValue;
                             },
                           ),
+                           SizedBox(height: 20.0),
                           const Text(
                             'Location',
                             style: TextStyle(

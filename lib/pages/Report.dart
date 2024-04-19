@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:reportaroad/main.dart';
 import 'package:reportaroad/utils/userlocation.dart';
-
 import '../utils/SeverityDropdown.dart';
 import '../utils/ImageSelection.dart';
 import '../utils/map.dart';
@@ -57,111 +56,7 @@ class _ReportState extends State<Report> {
       locationController.text = '$address($latitude, $longitude)';
     });
   }
-// void submit() async {
-//   setState(() {
-//     _isNotValidate = false; 
-//   });
 
-//   if (locationController.text.isNotEmpty &&
-//       severityController.text.isNotEmpty &&
-//       descController.text.isNotEmpty &&
-//       imageUrl != null) {
-//     showDialog(
-//       context: context,
-//       barrierDismissible: false,
-//       builder: (BuildContext context) {
-//         return Dialog(
-//           child: Padding(
-//             padding: EdgeInsets.all(20.0),
-//             child: Row(
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 CircularProgressIndicator(),
-//                 SizedBox(width: 20.0),
-//                 Text("Submitting report..."),
-//               ],
-//             ),
-//           ),
-//         );
-//       },
-//     );
-
-//     var reqBody = {
-//       "email": widget.email,
-//       "location": locationController.text,
-//       "severity": severityController.text,
-//       "desc": descController.text,
-//       "image": imageUrl!,
-//     };
-
-//     try {
-//             var response = await http.post(Uri.parse('${serverBaseUrl}report'),
-//           headers: {"Content-type": "application/json"},
-//           body: jsonEncode(reqBody));
-
-//       // Navigator.pop(context); 
-
-//       if (response.statusCode == 200) {
-//         locationController.clear();
-//         severityController.clear();
-//         descController.clear();
-//         // Navigator.pop(context);
-//         var jsonResponse = jsonDecode(response.body);
-//         if (jsonResponse['success'] != null && jsonResponse['success']) {
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             SnackBar(
-//               content: Text('Report submitted successfully'),
-//               backgroundColor: Colors.green,
-//             ),
-//           );
-//         }
-//       } else {
-//         var errorMessage = jsonDecode(response.body)['error'];
-//         showDialog(
-//           context: context,
-//           builder: (BuildContext context) {
-//             return AlertDialog(
-//               title: const Text('Error'),
-//               content: Text(errorMessage),
-//               actions: <Widget>[
-//                 TextButton(
-//                   onPressed: () {
-//                     Navigator.of(context).pop();
-//                   },
-//                   child: const Text('OK'),
-//                 ),
-//               ],
-//             );
-//           },
-//         );
-//       }
-//     } catch (error) {
-//       print("Error submitting report: $error");
-//       Navigator.pop(context);
-//       showDialog(
-//         context: context,
-//         builder: (BuildContext context) {
-//           return AlertDialog(
-//             title: const Text('Error'),
-//             content: Text("An error occurred while submitting the report."),
-//             actions: <Widget>[
-//               TextButton(
-//                 onPressed: () {
-//                   Navigator.of(context).pop();
-//                 },
-//                 child: const Text('OK'),
-//               ),
-//             ],
-//           );
-//         },
-//       );
-//     }
-//   } else {
-//     setState(() {
-//       _isNotValidate = true;
-//     });
-//   }
-// }
 void submit() async {
     if (locationController.text.isNotEmpty &&
       severityController.text.isNotEmpty &&

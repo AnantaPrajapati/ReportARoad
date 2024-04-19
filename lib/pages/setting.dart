@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
+import 'package:reportaroad/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 
 class SettingPage extends StatefulWidget {
@@ -13,74 +16,71 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
+  String firstname = '';
+   String lastname = '';
+    String username = '';
+     String email = '';
   final firstnameController = TextEditingController();
   final lastnameController = TextEditingController();
   final usernameController = TextEditingController();
   final emailController = TextEditingController(); // Add controller for image
   final double horizontalPadding = 40;
+  late SharedPreferences prefs;
+  bool _isNotValidate = false;
 
-//   void loginuser() async {
-//   if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
-//     var reqBody = {
-//       "email": emailController.text,
-//       "password": passwordController.text
-//     };
+  void profile() async {
+  if (emailController.text.isNotEmpty && firstnameController.text.isNotEmpty) {
+    var reqBody = {
+      "email": emailController.text,
+      "firstname": firstnameController.text,
+            "username": usernameController.text,
+                  "lastname": lastnameController.text
+    };
 
-//     var response = await http.post(Uri.parse('http://192.168.0.103:3000/profile'),
-//         headers: {"Content-type": "application/json"},
-//         body: jsonEncode(reqBody));
+     var response = await http.get(Uri.parse('${serverBaseUrl}profile'),
+          headers: {"Content-type": "application/json"});
+        
 
-//     if (response.statusCode == 200) {
-//       var jsonResponse = jsonDecode(response.body);
-//       print(jsonResponse['status']);
+    if (response.statusCode == 200) {
+      var jsonResponse = json.decode(response.body);
+      print(jsonResponse['status']);
 
-//       if (jsonResponse['status']) {
-//         var myToken = jsonResponse['token'];
-//         prefs.setString('token', myToken);
+      setState(() {
+        firstname = jsonResponse["firstName"];
+        lastname = jsonResponse["lastName"];
+        username = jsonResponse["Username"];
+        email = jsonResponse["Email"];
 
-//         // Retrieve user information
-//         var firstname = jsonResponse['firstname'];
-//         var lastname = jsonResponse['lastname'];
-//         var username = jsonResponse['username'];
+      });
 
-//         Navigator.push(
-//           context,
-//           MaterialPageRoute(builder: (context) => Home(
-//             token: myToken,
-//             firstname: firstname,
-//             lastname: lastname,
-//             username: username,
-//           )),
-//         );
-//       }
-//     } else {
-//       // Handle error response from the server
-//       var errorMessage =
-//           jsonDecode(response.body)['error']; // Extract error message
-//       showDialog(
-//         context: context,
-//         builder: (BuildContext context) {
-//           return AlertDialog(
-//             title: const Text('Error'),
-//             content: Text(errorMessage),
-//             actions: <Widget>[
-//               TextButton(
-//                 onPressed: () {
-//                   Navigator.of(context).pop();
-//                 },
-//                 child: const Text('OK'),
-//               ),
-//             ],
-//           );
-//         },
-//       );
-//     }
-//   } else {
-//     setState(() {
-//       _isNotValidate = true;
-//     });
-//   }
-// }
+    } else {
+      // Handle error response from the server
+      var errorMessage =
+          jsonDecode(response.body)['error']; 
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content: Text(errorMessage),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  } else {
+    setState(() {
+      _isNotValidate = true;
+    });
+  }
+}
 
 
 @override
@@ -165,6 +165,7 @@ Widget build(BuildContext context) {
                     
                     ElevatedButton(
                       onPressed: () {
+                        profile();
                         
                       },
                       child: const Text(

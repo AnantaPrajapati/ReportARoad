@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:reportaroad/main.dart';
 import 'package:reportaroad/pages/dash.dart';
 import 'package:reportaroad/pages/home.dart';
@@ -34,6 +35,7 @@ class _LoginpageState extends State<Loginpage> {
     prefs = await SharedPreferences.getInstance();
   }
 
+
   void loginuser() async {
     if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
       var reqBody = {
@@ -52,10 +54,15 @@ class _LoginpageState extends State<Loginpage> {
         if (jsonResponse['status']) {
           var myToken = jsonResponse['token'];
           prefs.setString('token', myToken);
+           Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(myToken);
+           token =myToken;
+           String id = jwtDecodedToken["_id"];
+          //  DecodedToken = jwtDecodedToken;
+
           // ignore: use_build_context_synchronously
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Home(token: myToken)),
+            MaterialPageRoute(builder: (context) => Home(token: myToken, id: id)),
           );
         }
       } else {

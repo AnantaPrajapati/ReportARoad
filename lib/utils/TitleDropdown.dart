@@ -10,7 +10,7 @@ class TitleDropdown extends StatefulWidget {
 }
 
 class _TitleDropdownState extends State<TitleDropdown> {
-  String _selectedTitle = 'Low'; 
+  String _selectedTitle = 'Accident'; 
 
   @override
   Widget build(BuildContext context) {
