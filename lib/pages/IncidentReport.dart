@@ -35,20 +35,20 @@ class _ReportState extends State<IncidentReport> {
     });
   }
 
-void submit() async {
+void save() async {
     if (locationController.text.isNotEmpty &&
       titleController.text.isNotEmpty &&
       descController.text.isNotEmpty &&
       imageUrl != null){
       var reqBody = {
-        "email": widget.email,
+        "email": email,
       "location": locationController.text,
       "title": titleController.text,
       "desc": descController.text,
       "image": imageUrl!,
       };
 
-      var response = await http.post(Uri.parse('${serverBaseUrl}incident'),
+      var response = await http.post(Uri.parse('${serverBaseUrl}IncidentReport'),
           headers: {"Content-type": "application/json"},
           body: jsonEncode(reqBody));
 
@@ -217,7 +217,7 @@ void submit() async {
                           SizedBox(height: 20.0),
                           ElevatedButton(
                             onPressed: () {
-                              submit();
+                              save();
                             },
                             child: const Text(
                               "Submit",

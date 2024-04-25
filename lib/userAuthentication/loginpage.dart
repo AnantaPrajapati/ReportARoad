@@ -56,6 +56,7 @@ class _LoginpageState extends State<Loginpage> {
           prefs.setString('token', myToken);
            Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(myToken);
            token =myToken;
+           //email=jwtDecodedToken["email"];
            String id = jwtDecodedToken["_id"];
           //  DecodedToken = jwtDecodedToken;
 
@@ -66,9 +67,8 @@ class _LoginpageState extends State<Loginpage> {
           );
         }
       } else {
-        // Handle error response from the server
         var errorMessage =
-            jsonDecode(response.body)['error']; // Extract error message
+            jsonDecode(response.body)['error']; 
         // ignore: use_build_context_synchronously
         showDialog(
           context: context,
@@ -164,7 +164,7 @@ class _LoginpageState extends State<Loginpage> {
                       hintText: "Password",
                       // labelText: "Password",
                       border: InputBorder
-                          .none, // Remove the default border of TextFormField
+                          .none,
                       contentPadding:
                           const EdgeInsets.symmetric(vertical: 20.0),
                       suffixIcon: tooglePassword(),
@@ -183,10 +183,10 @@ class _LoginpageState extends State<Loginpage> {
                   ),
                   style: ElevatedButton.styleFrom(
                     // ignore: deprecated_member_use
-                    primary: const Color(0xFF2C75FF), // BUTTON COLOR
+                    primary: const Color(0xFF2C75FF),
                     // ignore: deprecated_member_use
-                    onPrimary: Colors.white, // text color
-                    minimumSize: const Size(double.infinity, 50), // button size
+                    onPrimary: Colors.white, 
+                    minimumSize: const Size(double.infinity, 50),
                   ),
                   onPressed: () {
                     loginuser();
@@ -245,45 +245,7 @@ class _LoginpageState extends State<Loginpage> {
                     ),
                   ],
                 ),
-                // const SizedBox(
-                //   height: 20.0,
-                // ),
-                // ElevatedButton(
-                //     onPressed: () {
-                //       //          Navigator.push(
-                //       //   context,
-                //       //   MaterialPageRoute(builder: (context) => const signuppage()),
-                //       // );
-                //       // _launchGoogleAccounts(); // Call fun
-                //     },
-                //     style: ElevatedButton.styleFrom(
-                //       // ignore: deprecated_member_use
-                //       primary: const Color(0xFF2C75FF), // BUTTON COLOR
-                //       // ignore: deprecated_member_use
-                //       onPrimary: Colors.white, // text color
-                //       minimumSize:
-                //           const Size(double.infinity, 50), // button size
-                //     ),
-                //     child: Row(
-                //       mainAxisAlignment: MainAxisAlignment.center,
-                //       children: [
-                //         Container(
-                //           constraints: const BoxConstraints(
-                //             maxWidth: 44, // Set the maximum width
-                //             maxHeight: 44, // Set the maximum height
-                //           ),
-                //           child: Image.asset(
-                //             "assets/images/google_logo.png",
-                //             fit: BoxFit.cover,
-                //           ),
-                //         ),
-                //         const SizedBox(width: 10),
-                //         const Text(
-                //           "Continue with google",
-                //           style: TextStyle(fontSize: 16),
-                //         ),
-                //       ],
-                //     )),
+              
                 const SizedBox(
                   height: 5.0,
                 ),

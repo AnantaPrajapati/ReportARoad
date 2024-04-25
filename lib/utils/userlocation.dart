@@ -16,7 +16,7 @@ class Userlocationpage extends StatefulWidget {
 }
 
 class _UserlocationpageState extends State<Userlocationpage> {
-  String locationMessage = 'Current location of user';
+  // String locationMessage = 'Current location of user';
   late String lat;
   late String long;
   late String address = '';
@@ -57,9 +57,9 @@ class _UserlocationpageState extends State<Userlocationpage> {
       lat = position.latitude.toString();
       long = position.longitude.toString();
 
-      setState(() {
-        locationMessage = 'latitude: $lat, Longitude: $long';
-      });
+      // setState(() {
+      //   locationMessage = 'latitude: $lat, Longitude: $long';
+      // });
     });
   }
 
@@ -122,9 +122,9 @@ Future<void> _openMap(String lat, String long) async {
 
                       getAddressFromLatLong(value);
 
-                      setState(() {
-                        locationMessage = 'Latitude: $lat, Longitude: $long';
-                      });
+                      // setState(() {
+                      //   locationMessage = 'Latitude: $lat, Longitude: $long';
+                      // });
                       widget.onLocationSelected(address, lat, long);
                     });
                   },
@@ -152,9 +152,9 @@ Future<void> _openMap(String lat, String long) async {
                   },
                 ),
                 const SizedBox(height: 20),
-                Text(locationMessage),
+                // Text(locationMessage),
                 const SizedBox(height: 20),
-                Text('Address: $address'),
+                // Text('Address: $address'),
               ],
             ),
           ),

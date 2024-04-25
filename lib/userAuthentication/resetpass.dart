@@ -42,6 +42,7 @@ class _ResetPassState extends State<ResetPass> {
       print(jsonResponse['status']);
       
     if (jsonResponse['status'] != null && jsonResponse['status']) {
+      print('Password reset successfully.');
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => Loginpage()),

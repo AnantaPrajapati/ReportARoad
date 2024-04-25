@@ -4,15 +4,16 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:reportaroad/main.dart';
+import 'package:reportaroad/pages/ViewReport.dart';
 import 'package:reportaroad/utils/userlocation.dart';
 import '../utils/SeverityDropdown.dart';
 import '../utils/ImageSelection.dart';
 import '../utils/map.dart';
 
-
 class Report extends StatefulWidget {
-  final String email;
-  const Report({super.key, required this.email});
+  // final String email;
+  final String userId;
+  Report({super.key, required this.userId});
 
   @override
   State<Report> createState() => _ReportState();
@@ -57,17 +58,17 @@ class _ReportState extends State<Report> {
     });
   }
 
-void submit() async {
+  void submit() async {
     if (locationController.text.isNotEmpty &&
-      severityController.text.isNotEmpty &&
-      descController.text.isNotEmpty &&
-      imageUrl != null){
+        severityController.text.isNotEmpty &&
+        descController.text.isNotEmpty &&
+        imageUrl != null) {
       var reqBody = {
-        "email": widget.email,
-      "location": locationController.text,
-      "severity": severityController.text,
-      "desc": descController.text,
-      "image": imageUrl!,
+        "userId": widget.userId,
+        "location": locationController.text,
+        "severity": severityController.text,
+        "desc": descController.text,
+        "image": imageUrl!,
       };
 
       var response = await http.post(Uri.parse('${serverBaseUrl}report'),
@@ -78,24 +79,24 @@ void submit() async {
         locationController.clear();
         severityController.clear();
         descController.clear();
+        ViewReports(userId:userId,token: token,);
         var jsonResponse = jsonDecode(response.body);
         print(jsonResponse['status']);
 
-          if (response.statusCode == 200) {
-        var jsonResponse = jsonDecode(response.body);
-        if (jsonResponse['success'] != null && jsonResponse['success']) {
-          // Navigate to the verification page
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => VerifyPass(verEmail: emailController.text),
-          //   ),
-          // );
+        if (response.statusCode == 200) {
+          var jsonResponse = jsonDecode(response.body);
+          if (jsonResponse['success'] != null && jsonResponse['success']) {
+            // Navigate to the verification page
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => VerifyPass(verEmail: emailController.text),
+            //   ),
+            // );
+          }
         }
-      } 
       } else {
-        var errorMessage =
-            jsonDecode(response.body)['error']; 
+        var errorMessage = jsonDecode(response.body)['error'];
         // ignore: use_build_context_synchronously
         showDialog(
           context: context,
@@ -121,7 +122,6 @@ void submit() async {
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -157,14 +157,13 @@ void submit() async {
                 ),
               ),
             ),
-           
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     SizedBox(height: 20.0),
-              Padding(
+                    SizedBox(height: 20.0),
+                    Padding(
                       padding:
                           EdgeInsets.symmetric(horizontal: horizontalPadding),
                       child: Container(
@@ -210,13 +209,6 @@ void submit() async {
                               severityController.text = newValue;
                             },
                           ),
-
-                          // TextFormField(
-                          //   controller: severityController,
-                          //   decoration: InputDecoration(
-                          //     hintText: 'Enter severity',
-                          //   ),
-                          // ),
                           SizedBox(height: 20.0),
                           Text(
                             'Description',
@@ -230,32 +222,6 @@ void submit() async {
                             ),
                             maxLines: 2,
                           ),
-                          // SizedBox(height: 20.0),
-                          // ElevatedButton(
-                          //   onPressed: () {
-                          //     _getImageFromCamera();
-                          //   },
-                          //   child: const Text(
-                          //     "Attach image",
-                          //     style: TextStyle(fontSize: 16),
-                          //   ),
-                          //   style: ElevatedButton.styleFrom(
-                          //     primary: const Color(0xFF2C75FF),
-                          //     onPrimary: Colors.white,
-                          //     minimumSize: const Size(double.infinity, 50),
-                          //   ),
-                          // ),
-                          // // SizedBox(height: 20),
-
-                          // TextFormField(
-                          //   controller: imageController,
-                          //   decoration: InputDecoration(
-                          //     labelText: 'Image',
-                          //     border: OutlineInputBorder(),
-                          //   ),
-                          //   maxLines: 5,
-                          //   readOnly: true,
-                          // ),
 
                           SizedBox(height: 20),
                           ImageSelectionFormField(
@@ -266,25 +232,8 @@ void submit() async {
                             },
                           ),
                           //anantaprajapati0@gmail.com
+                          
 
-                          // SizedBox(height: 20),
-                          // ElevatedButton(
-                          //   onPressed: () {
-
-                          //     String imageData = imageController.text;
-
-                          //     print('Sending image data to server: $imageData');
-                          //   },
-                          //   child: const Text(
-                          //     "Send to server",
-                          //     style: TextStyle(fontSize: 16),
-                          //   ),
-                          //   style: ElevatedButton.styleFrom(
-                          //     primary: const Color(0xFF2C75FF),
-                          //     onPrimary: Colors.white,
-                          //     minimumSize: const Size(double.infinity, 50),
-                          //   ),
-                          // ),
                           SizedBox(height: 20.0),
                           ElevatedButton(
                             onPressed: () {

@@ -27,61 +27,7 @@ class _SettingPageState extends State<SettingPage> {
   final double horizontalPadding = 40;
   late SharedPreferences prefs;
   bool _isNotValidate = false;
-
-  void profile() async {
-  if (emailController.text.isNotEmpty && firstnameController.text.isNotEmpty) {
-    var reqBody = {
-      "email": emailController.text,
-      "firstname": firstnameController.text,
-            "username": usernameController.text,
-                  "lastname": lastnameController.text
-    };
-
-     var response = await http.get(Uri.parse('${serverBaseUrl}profile'),
-          headers: {"Content-type": "application/json"});
-        
-
-    if (response.statusCode == 200) {
-      var jsonResponse = json.decode(response.body);
-      print(jsonResponse['status']);
-
-      setState(() {
-        firstname = jsonResponse["firstName"];
-        lastname = jsonResponse["lastName"];
-        username = jsonResponse["Username"];
-        email = jsonResponse["Email"];
-
-      });
-
-    } else {
-      // Handle error response from the server
-      var errorMessage =
-          jsonDecode(response.body)['error']; 
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Error'),
-            content: Text(errorMessage),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    }
-  } else {
-    setState(() {
-      _isNotValidate = true;
-    });
-  }
-}
-
+bool _isNotificationEnabled = false;
 
 @override
 Widget build(BuildContext context) {
@@ -90,6 +36,7 @@ Widget build(BuildContext context) {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Settings App Bar
           Container(
             decoration: const BoxDecoration(
               color: Color(0xFF2C75FF),
@@ -99,8 +46,8 @@ Widget build(BuildContext context) {
                 horizontal: horizontalPadding,
                 vertical: 20
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'Settings',
@@ -113,75 +60,47 @@ Widget build(BuildContext context) {
               ),
             ),
           ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          // User Profile
+          UserAccountsDrawerHeader(
+            accountName: Text("$firstname $lastname"),
+            accountEmail: Text(username),
+            currentAccountPicture: CircleAvatar(
+              child: Text(
+                username.isNotEmpty ? username[0].toUpperCase() : "",
+                style: TextStyle(fontSize: 40.0),
+              ),
+            ),
+          ),
+          // Notification and FAQ Buttons
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: 10,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Notification Toggle Button
+                Row(
                   children: [
-                    const SizedBox(height: 20.0),
-                    const Text(
-                      'Firstname',
-                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 5.0),
-                    TextFormField(
-                      controller: firstnameController,
-                      enabled: false, // Set enabled to false to disable editing
-                      decoration: const InputDecoration(),
-                    ),
-                    SizedBox(height: 20.0),
-                    Text(
-                      'Lastname',
-                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                    ),
-                    TextFormField(
-                      controller: lastnameController,
-                      enabled: false, // Set enabled to false to disable editing
-                      decoration: InputDecoration(),
-                    ),
-                    SizedBox(height: 20.0),
-                    Text(
-                      'Username',
-                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                    ),
-                    TextFormField(
-                      controller: usernameController,
-                      enabled: false, // Set enabled to false to disable editing
-                      decoration: InputDecoration(),
-                    ),
-                    SizedBox(height: 20.0),
-                    Text(
-                      'Email',
-                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                    ),
-                    TextFormField(
-                      controller: emailController,
-                      enabled: false, // Set enabled to false to disable editing
-                      decoration: InputDecoration(),
-                    ),
-                    SizedBox(height: 20.0),
-                    
-                    ElevatedButton(
-                      onPressed: () {
-                        profile();
-                        
+                    Text('Notifications'),
+                    Switch(
+                      value: false, // Set initial value based on user preference
+                      onChanged: (value) {
+                        // Update notification preference here
                       },
-                      child: const Text(
-                        "Submit",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        primary: const Color(0xFF2C75FF),
-                        onPrimary: Colors.white,
-                        minimumSize: const Size(double.infinity, 50),
-                      ),
                     ),
-                    SizedBox(height: 20.0),
                   ],
                 ),
-              ),
+                SizedBox(height: 10), // Add some space between buttons
+                // FAQ Button
+                ElevatedButton(
+                  onPressed: () {
+                    // Navigate to FAQ page
+                  },
+                  child: Text('FAQ'),
+                ),
+              ],
             ),
           ),
         ],
@@ -189,5 +108,4 @@ Widget build(BuildContext context) {
     ),
   );
 }
-
 }

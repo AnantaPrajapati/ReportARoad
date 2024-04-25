@@ -3,7 +3,8 @@ import 'package:reportaroad/pages/IncidentReport.dart';
 import 'package:reportaroad/utils/reportsection.dart';
 
 class ReportIncident extends StatefulWidget {
-  const ReportIncident({Key? key}) : super(key: key);
+  
+  const ReportIncident({super.key,});
 
   @override
   State<ReportIncident> createState() => _ReportIncidentState();
@@ -97,7 +98,7 @@ class _ReportIncidentState extends State<ReportIncident> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => IncidentReport(
-                            email: '',
+                            email:'',
                           ),
                         ),
                       );
