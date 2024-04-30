@@ -8,7 +8,7 @@ import 'package:geolocator/geolocator.dart';
 
 class Map extends StatefulWidget {
    final GoogleMapController? mapController;
-  const Map({Key? key, this.mapController}) : super(key: key);
+  const Map({Key? key, this.mapController, required List<Marker> markers}) : super(key: key);
 
   @override
   State<Map> createState() => _MapState();

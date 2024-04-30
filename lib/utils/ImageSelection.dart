@@ -52,7 +52,7 @@ class _ImageSelectionFormFieldState extends State<ImageSelectionFormField> {
           final url = jsonMap['url'];
           _imageUrl = url;
         });
-        widget.onImageUploaded?.call(_imageUrl!); // Notify parent widget with uploaded image URL
+        widget.onImageUploaded?.call(_imageUrl!); 
       } else {
         print('Failed to upload image. Status code: ${response.statusCode}');
       }

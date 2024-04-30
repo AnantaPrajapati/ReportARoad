@@ -27,8 +27,7 @@ import '../main.dart';
 class Home extends StatefulWidget {
   final token;
   String id;
-  Home({required this.token, required this.id, Key? key})
-      : super(key: key);
+  Home({required this.token, required this.id, Key? key}) : super(key: key);
 
   @override
   State<Home> createState() => HomeState();
@@ -44,7 +43,7 @@ class HomeState extends State<Home> {
   late bool hasAskedForLocationPermission;
   late String username;
   late String userId;
-  // late String userId='';
+    late String token;
 
 //anantaprajapati0@gmail.com
   @override
@@ -55,13 +54,14 @@ class HomeState extends State<Home> {
 
     email = jwtDecodedToken['email'];
     userId = jwtDecodedToken['_id'];
+    token = widget.token;
     // if (jwtDecodedToken.containsKey('Username')) {
     //   username = jwtDecodedToken['Username'];
     // }
     hasAskedForLocationPermission = false;
     _checkLocationPermission();
-  
-    ViewReports(userId: userId, token: token,);
+
+    // ViewReports(userId: userId, token: token,);
   }
 
   Future<void> _checkLocationPermission() async {
@@ -150,7 +150,9 @@ class HomeState extends State<Home> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Welcome home,"),
-                  Text(userId, style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                  Text(userId,
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -206,40 +208,40 @@ class HomeState extends State<Home> {
             ),
             const SizedBox(height: 5.0),
             SingleChildScrollView(
-            child: GridView.builder(
-              itemCount: 2,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(25),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+              child: GridView.builder(
+                itemCount: 2,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(25),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                ),
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      if (index == 0) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => IncidentReport(email: email),
+                          ),
+                        );
+                      } else if (index == 1) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EmergencyNumber(),
+                          ),
+                        );
+                      }
+                    },
+                    child: RerportSection(
+                      ReportSectionName: myReportSection[index][0],
+                      iconPath: myReportSection[index][1],
+                    ),
+                  );
+                },
               ),
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () {
-                    if (index == 0) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => IncidentReport(email: email),
-                        ),
-                      );
-                    } else if (index == 1) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EmergencyNumber(),
-                        ),
-                      );
-                    }
-                  },
-                  child: RerportSection(
-                    ReportSectionName: myReportSection[index][0],
-                    iconPath: myReportSection[index][1],
-                  ),
-                );
-              },
-            ),
             ),
             // Padding(
             //   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -249,15 +251,21 @@ class HomeState extends State<Home> {
           ],
         ),
       ),
-      // ViewReports(userId: userId, token: token),
-      Report(userId: userId),
+      Report(
+        userId: userId,
+        token: widget.token,
+      ),
+      ViewReports(
+        userId: userId,
+        token: widget.token,
+      ),
       const SettingPage()
     ];
 
     return Scaffold(
       key: _scaffoldKey,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(_selectedIndex == 0 ? 100 : 0),
+        preferredSize: Size.fromHeight(_selectedIndex == 0 ? 90 : 0),
         child: Center(
           child: _selectedIndex == 0
               ? Container(
@@ -265,27 +273,35 @@ class HomeState extends State<Home> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: horizontalPadding,
-                      vertical: 25,
+                      vertical: 30,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        IconButton(
-                          icon: Image.asset(
-                            "assets/images/menu.png",
-                            height: 35,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
+                        GestureDetector(
+                          onTap: () {
                             _scaffoldKey.currentState?.openDrawer();
                           },
+                          child: Image.asset(
+                            "assets/images/menu.png",
+                            height: 45,
+                            color: Colors.white,
+                          ),
                         ),
                         Stack(
                           children: [
-                            Icon(
-                              Icons.notification_add,
-                              size: 35,
-                              color: Colors.white,
+                            GestureDetector(
+                              onTap: () {
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(builder: (context) => YourNotificationPage()),
+                                // );
+                              },
+                              child: Icon(
+                                Icons.notification_add,
+                                size: 35,
+                                color: Colors.white,
+                              ),
                             ),
                             Positioned(
                               right: 0,
@@ -316,7 +332,7 @@ class HomeState extends State<Home> {
       drawer: Container(
         width: MediaQuery.of(context).size.width * 0.7,
         color: Colors.white,
-        child: SlideMenu(id: widget.id),
+        child: SlideMenu(userId: userId, id: '',),
       ),
       body: IndexedStack(
         index: _selectedIndex,

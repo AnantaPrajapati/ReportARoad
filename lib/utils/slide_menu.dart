@@ -5,13 +5,15 @@ import 'package:reportaroad/main.dart';
 import 'package:http/http.dart' as http;
 import 'package:reportaroad/pages/ViewReport.dart';
 import 'package:reportaroad/userAuthentication/loginpage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SlideMenu extends StatefulWidget {
+   final String userId;
   String id;
 
   SlideMenu({
     Key? key,
-    required this.id,
+    required this.id, required this.userId
   }) : super(key: key);
 
   @override
@@ -36,7 +38,7 @@ class _SlideMenuState extends State<SlideMenu> {
 
   void profile() async {
     var response = await http.get(
-        Uri.parse('${serverBaseUrl}profile/${widget.id}'),
+        Uri.parse('${serverBaseUrl}profile?userId=${widget.userId}'),
         headers: {"Content-type": "application/json"});
 
     if (response.statusCode == 200) {
@@ -83,7 +85,7 @@ class _SlideMenuState extends State<SlideMenu> {
       };
 
       var response = await http.post(
-          Uri.parse('${serverBaseUrl}updateProfile/${widget.id}'),
+          Uri.parse('${serverBaseUrl}updateProfile?userId=${widget.userId}'),
           headers: {"Content-type": "application/json"},
           body: jsonEncode(regBody));
 
@@ -139,6 +141,9 @@ class _SlideMenuState extends State<SlideMenu> {
                 username.isNotEmpty ? username[0].toUpperCase() : "",
                 style: TextStyle(fontSize: 40.0),
               ),
+            ),
+            decoration: BoxDecoration(
+              color: Color(0xFF2C75FF), 
             ),
           ),
           ListTile(
@@ -204,22 +209,24 @@ class _SlideMenuState extends State<SlideMenu> {
           ListTile(
             leading: Icon(Icons.report),
             title: Text("View Report"),
-          //   onTap: () {
-          //   Navigator.push(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => ViewReports(userId: '',)),
-          // );
-          //   },
+            //   onTap: () {
+            //   Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => ViewReports(userId: '',)),
+            // );
+            //   },
           ),
           Divider(),
           ListTile(
             leading: Icon(Icons.logout),
             title: Text("Logout"),
-            onTap: () {
-            Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Loginpage()),
-          );
+            onTap: () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.remove('token');
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => Loginpage()),
+              );
             },
           ),
         ],

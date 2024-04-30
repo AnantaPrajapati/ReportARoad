@@ -151,7 +151,7 @@ void save() async {
                         child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onVerticalDragUpdate: (_) {},
-                          child: Map(mapController: mapController),
+                          child: Map(mapController: mapController, markers: [],),
                         ),
                       ),
                     ),

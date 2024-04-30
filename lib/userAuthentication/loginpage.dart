@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:reportaroad/main.dart';
@@ -8,7 +9,7 @@ import 'package:reportaroad/pages/dash.dart';
 import 'package:reportaroad/pages/home.dart';
 import 'package:reportaroad/userAuthentication/forgetPass.dart';
 import 'package:reportaroad/userAuthentication/signuppage.dart';
-
+import 'home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Loginpage extends StatefulWidget {
@@ -25,16 +26,37 @@ class _LoginpageState extends State<Loginpage> {
   bool _isSecuredPassword = true;
   late SharedPreferences prefs;
 
+  String token='';
+  // void checkLoggedIn() {
+  //   final token = prefs.getString('token');
+  //   if (token != null) {
+  //     // If token exists, navigate directly to Home
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => Home(token: null, id: '',)),
+  //     );
+  //   }
+  // }
+
   @override
   void initState() {
     super.initState();
     initSharedPref();
+     
+    // checkLoggedIn();
   }
-
   void initSharedPref() async {
     prefs = await SharedPreferences.getInstance();
+    initToken();
   }
 
+   void initToken() {
+    setState(() {
+      token = prefs.getString('token') ?? ''; 
+    });
+  }
+
+  
 
   void loginuser() async {
     if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
@@ -43,7 +65,7 @@ class _LoginpageState extends State<Loginpage> {
         "password": passwordController.text
       };
 
-      var response = await http.post(Uri.parse('${serverBaseUrl}login'),
+     var response = await http.post(Uri.parse('${serverBaseUrl}login'),
           headers: {"Content-type": "application/json"},
           body: jsonEncode(reqBody));
 

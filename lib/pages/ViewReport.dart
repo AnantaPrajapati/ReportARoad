@@ -1,122 +1,230 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:reportaroad/main.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-
-
+import 'package:reportaroad/main.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ViewReports extends StatefulWidget {
-  // final String email;
-   final String userId;
-   final token;
-    ViewReports( {super.key, required this.userId, required this.token});
+  final String userId;
+  final token;
+
+  ViewReports({Key? key, required this.userId, required this.token})
+      : super(key: key);
+
   @override
   _ViewReportsState createState() => _ViewReportsState();
 }
 
 class _ViewReportsState extends State<ViewReports> {
-  late List<dynamic> report = [];
- 
-  // late String email;
+  List<dynamic> _report = [];
 
   @override
   void initState() {
     super.initState();
-    // Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
-
-    // userId = jwtDecodedToken['_id'];
-    //  getReport(userId);
-    getReport(widget.userId);
-   
+    _getReport(widget.userId);
   }
 
-
-  void getReport(userId)async{
-    var reqBody = {
-        "userId": widget.userId,
-      };
-       var response = await http.post(Uri.parse('${serverBaseUrl}getReport'),
-          headers: {"Content-type": "application/json"},
-          body: jsonEncode(reqBody));
-
-          var jsonResponse = jsonDecode(response.body);
-          report = jsonResponse['success'];
-  }
-
-    void deleteReport() async{
-    var regBody = {
-      "userID": widget.userId,
-    };
-    var response = await http.post(Uri.parse('${serverBaseUrl}deleteReport'),
-        headers: {"Content-Type":"application/json"},
-        body: jsonEncode(regBody)
-    );
-    var jsonResponse = jsonDecode(response.body);
-    if(jsonResponse['status']){
-      getReport(userId);
+  void shareReport(String report) async {
+    try {
+      await Share.share(
+        report,
+        subject: 'Share Report',
+      );
+    } catch (e) {
+      print('Error sharing report: $e');
     }
   }
+
+  void _getReport(userId) async {
+    try {
+      var response = await http.get(
+        Uri.parse('${serverBaseUrl}getReport?userId=${widget.userId}'),
+        headers: {
+          "Content-type": "application/json",
+          "Cache-Control": "no-cache"
+        },
+      );
+
+      var jsonResponse = jsonDecode(response.body);
+      setState(() {
+        _report = jsonResponse['success'];
+        _report.forEach((report) {
+          if (report['status'] == null) {
+            report['status'] = 'pending';
+          }
+        });
+      });
+    } catch (e) {
+      print('Error fetching reports: $e');
+    }
+  }
+
+  void deleteReport(id) async {
+    try {
+      print('Deleting report with ID: $id');
+      var regBody = {
+        "id": id,
+      };
+      var response = await http.post(
+        Uri.parse('${serverBaseUrl}deleteReport'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(regBody),
+      );
+      var jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['status']) {
+        _getReport(widget.userId);
+      }
+    } catch (e) {
+      print('Error deleting report: $e');
+    }
+  }
+
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: Colors.lightBlueAccent,
-    body: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              color: const Color(0xFF2C75FF),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: report == null
-                  ? Center(child: CircularProgressIndicator()) 
-                  : ListView.builder(
-                      itemCount: report!.length,
-                      itemBuilder: (context, int index) {
-                        return Slidable(
-                          key: const ValueKey(0),
-                          endActionPane: ActionPane(
-                            motion: const ScrollMotion(),
-                            dismissible: DismissiblePane(onDismissed: () {}),
-                            children: [
-                              SlidableAction(
-                                backgroundColor: Color(0xFFFE4A49),
-                                foregroundColor: Colors.white,
-                                icon: Icons.delete,
-                                label: 'Delete',
-                                onPressed: (BuildContext context) {
-                                  print('${report[index]['_id']}');
-                                  // deleteReport('${report![index]['_id']}');
-                                },
-                              ),
-                            ],
-                          ),
-                          child: Card(
-                            borderOnForeground: false,
-                            child: ListTile(
-                              leading: Icon(Icons.task),
-                              title: Text('${report![index]['severity']}'),
-                              subtitle: Text('${report![index]['desc']}'),
-                              trailing: Icon(Icons.arrow_back),
-                            ),
-                          ),
-                        );
-                      },
+              padding: EdgeInsets.symmetric(
+                horizontal: 40,
+                vertical: 20,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        "Report",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      ),
                     ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.refresh),
+                  color: Colors.blue,
+                  onPressed: () {
+                    _getReport(widget.userId);
+                  },
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Container(
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: _report.isEmpty
+                    ? Center(child: Text('No reports available'))
+                    : ListView.builder(
+                        itemCount: _report.length,
+                        itemBuilder: (context, int index) {
+                          return Slidable(
+                            key: Key(_report[index]['_id']),
+                            endActionPane: ActionPane(
+                              motion: const ScrollMotion(),
+                              dismissible: DismissiblePane(
+                                onDismissed: () {
+                                  setState(() {
+                                    if (index < _report.length) {
+                                      _report.removeAt(index);
+                                    }
+                                  });
+                                  if (_report.isNotEmpty &&
+                                      index < _report.length) {
+                                    deleteReport(_report[index]['_id']);
+                                  }
+                                },
+                              ),
+                              children: [
+                                SlidableAction(
+                                  backgroundColor: Color(0xFFFE4A49),
+                                  foregroundColor: Colors.white,
+                                  icon: Icons.delete,
+                                  label: 'Delete',
+                                  onPressed: (BuildContext context) {
+                                    print('${_report[index]['_id']}');
+                                  },
+                                ),
+                              ],
+                            ),
+                            child: Card(
+                              borderOnForeground: false,
+                              child: ListTile(
+                                leading: _report[index]['image'] != null
+                                    ? Container(
+                                        width: 100, 
+                                        height: 100,
+                                        child: Image.network(
+                                          _report[index]['image'],
+                                          fit: BoxFit.cover,   
+                                        ),
+                                      )
+                                    : Icon(Icons.task),
+                                title: Text('${_report[index]['severity']}'),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('${_report[index]['desc']}'),
+                                    Text(
+                                      'Status: ${_report[index]['status'] ?? 'pending'}', // Set status to 'pending' if not provided
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            (_report[index]['status'] == null ||
+                                                    _report[index]['status'] ==
+                                                        'pending')
+                                                ? Colors.red
+                                                : (_report[index]['status'] ==
+                                                        'resolved')
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.share),
+                                      onPressed: () {
+                                        shareReport(
+                                            '${_report[index]['severity']}: ${_report[index]['desc']}');
+                                      },
+                                    ),
+                                    Icon(Icons.arrow_back),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

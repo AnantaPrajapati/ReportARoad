@@ -3,6 +3,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:reportaroad/main.dart';
 import 'package:reportaroad/main.dart';
 import 'package:reportaroad/pages/ViewReport.dart';
 import 'package:reportaroad/utils/userlocation.dart';
@@ -13,13 +15,15 @@ import '../utils/map.dart';
 class Report extends StatefulWidget {
   // final String email;
   final String userId;
-  Report({super.key, required this.userId});
+  final token;
+  Report({super.key, required this.userId, required this.token});
 
   @override
   State<Report> createState() => _ReportState();
 }
 
 class _ReportState extends State<Report> {
+   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final locationController = TextEditingController();
   final severityController = TextEditingController();
   final descController = TextEditingController();
@@ -27,101 +31,76 @@ class _ReportState extends State<Report> {
   bool _isNotValidate = false;
   final double horizontalPadding = 40;
   final double verticalPadding = 25;
+  late String userId;
 
   GoogleMapController? mapController;
 
-  // XFile? _imageFile;
-  // Future<void> _getImageFromCamera() async {
-  //   final image = await ImagePicker().pickImage(source: ImageSource.camera);
-  //   setState(() {
-  //     _imageFile = image;
-  //     if (_imageFile != null) {
-  //       // Convert image to base64
-  //       _convertImageToBase64();
-  //     }
-  //   });
-  // }
-
-  // Future<void> _convertImageToBase64() async {
-  //   if (_imageFile != null) {
-  //     List<int> imageBytes = await _imageFile!.readAsBytes();
-  //     String base64Image = base64Encode(imageBytes);
-  //     setState(() {
-  //       imageController.text = base64Image;
-  //     });
-  //   }
-  // }
 
   void setLocation(String address, String latitude, String longitude) {
     setState(() {
       locationController.text = '$address($latitude, $longitude)';
     });
   }
-
-  void submit() async {
-    if (locationController.text.isNotEmpty &&
-        severityController.text.isNotEmpty &&
-        descController.text.isNotEmpty &&
-        imageUrl != null) {
-      var reqBody = {
-        "userId": widget.userId,
-        "location": locationController.text,
-        "severity": severityController.text,
-        "desc": descController.text,
-        "image": imageUrl!,
-      };
-
-      var response = await http.post(Uri.parse('${serverBaseUrl}report'),
-          headers: {"Content-type": "application/json"},
-          body: jsonEncode(reqBody));
-
-      if (response.statusCode == 200) {
-        locationController.clear();
-        severityController.clear();
-        descController.clear();
-        ViewReports(userId:userId,token: token,);
-        var jsonResponse = jsonDecode(response.body);
-        print(jsonResponse['status']);
-
-        if (response.statusCode == 200) {
-          var jsonResponse = jsonDecode(response.body);
-          if (jsonResponse['success'] != null && jsonResponse['success']) {
-            // Navigate to the verification page
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) => VerifyPass(verEmail: emailController.text),
-            //   ),
-            // );
-          }
-        }
-      } else {
-        var errorMessage = jsonDecode(response.body)['error'];
-        // ignore: use_build_context_synchronously
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: Text(errorMessage),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-      }
-    } else {
-      setState(() {
-        _isNotValidate = true;
-      });
-    }
+ 
+ @override
+  void initState() {
+    super.initState();
+    // TODO: implement initState
+    ViewReports(userId: widget.userId, token: widget.token,);
   }
+  void submit() async {
+  if (locationController.text.isNotEmpty &&
+      severityController.text.isNotEmpty &&
+      descController.text.isNotEmpty &&
+      imageUrl != null) {
+    var reqBody = {
+      "userId": widget.userId,
+      "location": locationController.text,
+      "severity": severityController.text,
+      "desc": descController.text,
+      "image": imageUrl!,
+      "status": "pending", // Set status as pending
+    };
+
+    var response = await http.post(Uri.parse('${serverBaseUrl}report'),
+        headers: {"Content-type": "application/json"},
+        body: jsonEncode(reqBody));
+
+    if (response.statusCode == 200) {
+      locationController.clear();
+      severityController.clear();
+      descController.clear();
+      ViewReports(userId:userId, token: token,);
+      var jsonResponse = jsonDecode(response.body);
+      print(jsonResponse['status']);
+      // If successful, show success message or perform further actions
+    } else {
+      var errorMessage = jsonDecode(response.body)['error'];
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content: Text(errorMessage),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  } else {
+    setState(() {
+      _isNotValidate = true;
+    });
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -172,11 +151,11 @@ class _ReportState extends State<Report> {
                         child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onVerticalDragUpdate: (_) {},
-                          child: Map(mapController: mapController),
+                          child: Map(mapController: mapController, markers: [],),
                         ),
                       ),
                     ),
-                    Userlocationpage(
+                    Userlocationpage(  
                         onLocationSelected: (address, latitude, longitude) {
                       setLocation(address, latitude, longitude);
                     }),

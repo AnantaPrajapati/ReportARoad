@@ -20,34 +20,40 @@ class BottomNav extends StatelessWidget {
     return Container(
         color: Color(0xFF2C75FF),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
           child: GNav(
             backgroundColor: Color(0xFF2C75FF),
             color: Colors.white,
             activeColor: Colors.white,
             tabBackgroundColor: Colors.grey.withOpacity(0.5),
             padding: EdgeInsets.all(16),
-            gap: 8,
+            gap: 5,
             selectedIndex: selectedIndex,
             onTabChange: onTabChange,
-            tabs: [
+            tabs: const [
               GButton(
                 icon: Icons.home,
                 text: 'Home',
-                iconSize: 35,
-                textStyle: TextStyle(fontSize: 20, color: Colors.white),
+                iconSize: 30,
+                textStyle: TextStyle(fontSize: 15, color: Colors.white),
               ),
               GButton(
-                icon: Icons.favorite_border,
+                icon: Icons.report,
                 text: 'Report',
-                iconSize: 35,
-                textStyle: TextStyle(fontSize: 20, color: Colors.white),
+                  iconSize: 30,
+                textStyle: TextStyle(fontSize: 15, color: Colors.white),
+              ),
+              GButton(
+                icon: Icons.show_chart,
+                text: 'Reported',
+                  iconSize: 30,
+                textStyle: TextStyle(fontSize: 15, color: Colors.white),
               ),
               GButton(
                 icon: Icons.settings,
                 text: 'Settings',
-                iconSize: 35,
-                textStyle: TextStyle(fontSize: 20, color: Colors.white),
+                    iconSize: 30,
+                textStyle: TextStyle(fontSize: 15, color: Colors.white),
               ),
             ],
           ),

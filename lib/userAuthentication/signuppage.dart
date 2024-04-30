@@ -55,9 +55,9 @@ void signupuser() async {
         );
       }
     } else {
-        // Handle error response from the server
+       
         var errorMessage =
-            jsonDecode(response.body)['error']; // Extract error message
+            jsonDecode(response.body)['error'];
         // ignore: use_build_context_synchronously
         showDialog(
           context: context,
