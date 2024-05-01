@@ -5,11 +5,11 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:reportaroad/main.dart';
 import 'package:share_plus/share_plus.dart';
 
-class ViewReports extends StatefulWidget {
+class UpdatedReport extends StatefulWidget {
   final String userId;
   final token;
 
-  ViewReports({
+  UpdatedReport({
     Key? key,
     required this.userId,
     required this.token,
@@ -19,7 +19,7 @@ class ViewReports extends StatefulWidget {
   _ViewReportsState createState() => _ViewReportsState();
 }
 
-class _ViewReportsState extends State<ViewReports> {
+class _ViewReportsState extends State<UpdatedReport> {
   List<dynamic> _report = [];
 
   @override

@@ -203,7 +203,35 @@ class _SlideMenuState extends State<SlideMenu> {
           ListTile(
             leading: Icon(Icons.password),
             title: Text("Change Password"),
-            onTap: () => null,
+              onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text("Change Password"),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: lastNameController,
+                        decoration: InputDecoration(labelText: 'Old Password'),
+                      ),
+                      TextFormField(
+                        controller: usernameController,
+                        decoration: InputDecoration(labelText: 'New Password'),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    ElevatedButton(
+                      onPressed: () {
+                       
+                      },
+                      child: Text('Save'),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           Divider(),
           ListTile(

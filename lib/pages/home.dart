@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:reportaroad/pages/BottomNav.dart';
 import 'package:reportaroad/pages/Report.dart';
+import 'package:reportaroad/pages/UpdatedReport.dart';
 import 'package:reportaroad/pages/ViewReport.dart';
+import 'package:reportaroad/pages/Notification.dart';
 import 'package:reportaroad/pages/setting.dart';
 import 'package:reportaroad/utils/reportsection.dart';
 import 'package:reportaroad/utils/EmergencyNumber.dart';
@@ -43,7 +45,8 @@ class HomeState extends State<Home> {
   late bool hasAskedForLocationPermission;
   late String username;
   late String userId;
-    late String token;
+  late String token;
+  int reportCount = 0;
 
 //anantaprajapati0@gmail.com
   @override
@@ -54,6 +57,7 @@ class HomeState extends State<Home> {
 
     email = jwtDecodedToken['email'];
     userId = jwtDecodedToken['_id'];
+    username = jwtDecodedToken['username'];
     token = widget.token;
     // if (jwtDecodedToken.containsKey('Username')) {
     //   username = jwtDecodedToken['Username'];
@@ -62,6 +66,12 @@ class HomeState extends State<Home> {
     _checkLocationPermission();
 
     // ViewReports(userId: userId, token: token,);
+  }
+
+  void updateReportCount(int count) {
+    setState(() {
+      reportCount = count;
+    });
   }
 
   Future<void> _checkLocationPermission() async {
@@ -150,7 +160,7 @@ class HomeState extends State<Home> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Welcome home,"),
-                  Text(userId,
+                  Text(username,
                       style:
                           TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 ],
@@ -189,10 +199,28 @@ class HomeState extends State<Home> {
                       ),
                     ],
                   ),
+                  TableRow(
+                    children: [
+                      Column(
+                        children: [
+                          const SizedBox(height: 5),
+                          Center(child: Text("$reportCount")),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          const SizedBox(height: 5),
+                          Center(
+                            child: Text("1"),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 30.0),
+            const SizedBox(height: 20.0),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               child: Row(
@@ -243,19 +271,19 @@ class HomeState extends State<Home> {
                 },
               ),
             ),
-            // Padding(
-            //   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            //   child: ViewReports( userId: userId, token: token,)
-            // ),
-            // ViewReports(userId: userId)
           ],
         ),
       ),
       Report(
         userId: userId,
         token: widget.token,
+        updateReportCount: updateReportCount,
       ),
       ViewReports(
+        userId: userId,
+        token: widget.token,
+      ),
+      UpdatedReport(
         userId: userId,
         token: widget.token,
       ),
@@ -291,12 +319,12 @@ class HomeState extends State<Home> {
                         Stack(
                           children: [
                             GestureDetector(
-                              onTap: () {
-                                // Navigator.push(
-                                //   context,
-                                //   MaterialPageRoute(builder: (context) => YourNotificationPage()),
-                                // );
-                              },
+                              // onTap: () {
+                              //   Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(builder: (context) => Notificaton()),
+                              //   );
+                              // },
                               child: Icon(
                                 Icons.notification_add,
                                 size: 35,
@@ -332,7 +360,10 @@ class HomeState extends State<Home> {
       drawer: Container(
         width: MediaQuery.of(context).size.width * 0.7,
         color: Colors.white,
-        child: SlideMenu(userId: userId, id: '',),
+        child: SlideMenu(
+          userId: userId,
+          id: '',
+        ),
       ),
       body: IndexedStack(
         index: _selectedIndex,

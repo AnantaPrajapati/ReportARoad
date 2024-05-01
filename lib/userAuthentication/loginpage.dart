@@ -25,8 +25,10 @@ class _LoginpageState extends State<Loginpage> {
   bool _isNotValidate = false;
   bool _isSecuredPassword = true;
   late SharedPreferences prefs;
+  bool _isEmailEmpty = false;
+  bool _isPasswordEmpty = false;
 
-  String token='';
+  String token = '';
   // void checkLoggedIn() {
   //   final token = prefs.getString('token');
   //   if (token != null) {
@@ -42,30 +44,37 @@ class _LoginpageState extends State<Loginpage> {
   void initState() {
     super.initState();
     initSharedPref();
-     
+
     // checkLoggedIn();
   }
+
   void initSharedPref() async {
     prefs = await SharedPreferences.getInstance();
     initToken();
   }
 
-   void initToken() {
+  void initToken() {
     setState(() {
-      token = prefs.getString('token') ?? ''; 
+      token = prefs.getString('token') ?? '';
     });
   }
 
-  
-
   void loginuser() async {
+    setState(() {
+      _isEmailEmpty = emailController.text.isEmpty;
+      _isPasswordEmpty = passwordController.text.isEmpty;
+    });
     if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
+      setState(() {
+        _isEmailEmpty = false;
+        _isPasswordEmpty = false;
+      });
       var reqBody = {
         "email": emailController.text,
         "password": passwordController.text
       };
 
-     var response = await http.post(Uri.parse('${serverBaseUrl}login'),
+      var response = await http.post(Uri.parse('${serverBaseUrl}login'),
           headers: {"Content-type": "application/json"},
           body: jsonEncode(reqBody));
 
@@ -76,21 +85,21 @@ class _LoginpageState extends State<Loginpage> {
         if (jsonResponse['status']) {
           var myToken = jsonResponse['token'];
           prefs.setString('token', myToken);
-           Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(myToken);
-           token =myToken;
-           //email=jwtDecodedToken["email"];
-           String id = jwtDecodedToken["_id"];
+          Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(myToken);
+          token = myToken;
+          //email=jwtDecodedToken["email"];
+          String id = jwtDecodedToken["_id"];
           //  DecodedToken = jwtDecodedToken;
 
           // ignore: use_build_context_synchronously
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Home(token: myToken, id: id)),
+            MaterialPageRoute(
+                builder: (context) => Home(token: myToken, id: id)),
           );
         }
       } else {
-        var errorMessage =
-            jsonDecode(response.body)['error']; 
+        var errorMessage = jsonDecode(response.body)['error'];
         // ignore: use_build_context_synchronously
         showDialog(
           context: context,
@@ -129,7 +138,7 @@ class _LoginpageState extends State<Loginpage> {
           Container(
             constraints: const BoxConstraints(
               maxWidth: 200,
-              maxHeight: 200, 
+              maxHeight: 200,
             ),
             child: Image.asset(
               "assets/images/login.png",
@@ -157,17 +166,30 @@ class _LoginpageState extends State<Loginpage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black),
+                    border: Border.all(
+                        color: _isEmailEmpty ? Colors.red : Colors.black),
                     borderRadius: BorderRadius.circular(10.0),
                   ),
-                  child: TextFormField(
-                    controller: emailController,
-                    decoration: const InputDecoration(
-                      hintText: "Email",
-                      border: InputBorder
-                          .none, // Remove the default border of TextFormField
-                      contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: emailController,
+                        decoration: InputDecoration(
+                          hintText: "Email",
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                        ),
+                      ),
+                      // if (_isEmailEmpty)
+                      //   Text(
+                      //     "Email field cannot be empty",
+                      //     style: TextStyle(
+                      //       color: Colors.red,
+                      //       fontSize: 12.0,
+                      //     ),
+                      //   ),
+                    ],
                   ),
                 ),
                 const SizedBox(
@@ -176,7 +198,8 @@ class _LoginpageState extends State<Loginpage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black),
+                    border: Border.all(
+                        color: _isPasswordEmpty ? Colors.red : Colors.black),
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: TextFormField(
@@ -185,15 +208,13 @@ class _LoginpageState extends State<Loginpage> {
                     decoration: InputDecoration(
                       hintText: "Password",
                       // labelText: "Password",
-                      border: InputBorder
-                          .none,
+                      border: InputBorder.none,
                       contentPadding:
                           const EdgeInsets.symmetric(vertical: 20.0),
                       suffixIcon: tooglePassword(),
                     ),
                   ),
                 ),
-
                 const SizedBox(
                   height: 20.0,
                 ),
@@ -207,7 +228,7 @@ class _LoginpageState extends State<Loginpage> {
                     // ignore: deprecated_member_use
                     primary: const Color(0xFF2C75FF),
                     // ignore: deprecated_member_use
-                    onPrimary: Colors.white, 
+                    onPrimary: Colors.white,
                     minimumSize: const Size(double.infinity, 50),
                   ),
                   onPressed: () {
@@ -267,11 +288,9 @@ class _LoginpageState extends State<Loginpage> {
                     ),
                   ],
                 ),
-              
                 const SizedBox(
                   height: 5.0,
                 ),
-
                 GestureDetector(
                   onTap: () {
                     Navigator.push(

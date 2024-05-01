@@ -16,7 +16,8 @@ class Report extends StatefulWidget {
   // final String email;
   final String userId;
   final token;
-  Report({super.key, required this.userId, required this.token});
+    final Function(int) updateReportCount; 
+  Report({super.key, required this.userId, required this.token, required this.updateReportCount});
 
   @override
   State<Report> createState() => _ReportState();
@@ -32,6 +33,7 @@ class _ReportState extends State<Report> {
   final double horizontalPadding = 40;
   final double verticalPadding = 25;
   late String userId;
+   int reportCount = 0;
 
   GoogleMapController? mapController;
 
@@ -59,7 +61,7 @@ class _ReportState extends State<Report> {
       "severity": severityController.text,
       "desc": descController.text,
       "image": imageUrl!,
-      "status": "pending", // Set status as pending
+      "status": "pending", 
     };
 
     var response = await http.post(Uri.parse('${serverBaseUrl}report'),
@@ -70,10 +72,11 @@ class _ReportState extends State<Report> {
       locationController.clear();
       severityController.clear();
       descController.clear();
+      widget.updateReportCount(reportCount + 1); 
       ViewReports(userId:userId, token: token,);
       var jsonResponse = jsonDecode(response.body);
       print(jsonResponse['status']);
-      // If successful, show success message or perform further actions
+
     } else {
       var errorMessage = jsonDecode(response.body)['error'];
       showDialog(

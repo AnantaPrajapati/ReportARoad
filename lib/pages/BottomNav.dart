@@ -26,7 +26,7 @@ class BottomNav extends StatelessWidget {
             color: Colors.white,
             activeColor: Colors.white,
             tabBackgroundColor: Colors.grey.withOpacity(0.5),
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.all(13),
             gap: 5,
             selectedIndex: selectedIndex,
             onTabChange: onTabChange,
@@ -46,6 +46,12 @@ class BottomNav extends StatelessWidget {
               GButton(
                 icon: Icons.show_chart,
                 text: 'Reported',
+                  iconSize: 30,
+                textStyle: TextStyle(fontSize: 15, color: Colors.white),
+              ),
+               GButton(
+                icon: Icons.update,
+                text: 'Updates',
                   iconSize: 30,
                 textStyle: TextStyle(fontSize: 15, color: Colors.white),
               ),
