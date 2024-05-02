@@ -11,13 +11,11 @@ class EmergencyNumber extends StatefulWidget {
 class _EmergencyNumberState extends State<EmergencyNumber> {
   late double height;
   late double width;
-  //padding constants
   final double horizontalPadding = 40;
   final double verticalPadding = 25;
 
-  //report box
+
   List myIncidentSection = [
-    //Reports
     ["Accident", "assets/images/warning.png", true],
     ["Traffic Violation", "assets/images/emergency.png", true],
      ["Accident", "assets/images/warning.png", true],
@@ -52,7 +50,7 @@ class _EmergencyNumberState extends State<EmergencyNumber> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        // Navigate back to the previous page
+                        
                         Navigator.of(context).pop();
                       },
                       child: const Row(
@@ -64,11 +62,10 @@ class _EmergencyNumberState extends State<EmergencyNumber> {
                           ),
                           SizedBox(
                               width:
-                                  10), // Add some spacing between icon and text
+                                  10),
                         ],
                       ),
                     ),
-                    // Center the text vertically
                     const Expanded(
                       child: Center(
                         child: Text(
@@ -84,7 +81,6 @@ class _EmergencyNumberState extends State<EmergencyNumber> {
                 ),
               ),
             ),
-            // Add more widgets here if needed
             const SizedBox(
               height: 5,
             ),

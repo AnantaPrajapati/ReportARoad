@@ -26,14 +26,11 @@ class RerportSection extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            //icon
             Image.asset(
               iconPath, 
               height: 45,
               ),
-      
-      
-            //Report section name 
+       
            Row(
             children: [
                Expanded(

@@ -5,16 +5,15 @@ import 'package:reportaroad/main.dart';
 import 'package:http/http.dart' as http;
 import 'package:reportaroad/pages/ViewReport.dart';
 import 'package:reportaroad/userAuthentication/loginpage.dart';
+import 'package:reportaroad/utils/ImageSelection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SlideMenu extends StatefulWidget {
-   final String userId;
+  final String userId;
   String id;
 
-  SlideMenu({
-    Key? key,
-    required this.id, required this.userId
-  }) : super(key: key);
+  SlideMenu({Key? key, required this.id, required this.userId})
+      : super(key: key);
 
   @override
   State<SlideMenu> createState() => _SlideMenuState();
@@ -29,6 +28,7 @@ class _SlideMenuState extends State<SlideMenu> {
   TextEditingController lastNameController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
   bool _isNotValidate = false;
+  String? imageUrl;
 
   @override
   void initState() {
@@ -143,7 +143,7 @@ class _SlideMenuState extends State<SlideMenu> {
               ),
             ),
             decoration: BoxDecoration(
-              color: Color(0xFF2C75FF), 
+              color: Color(0xFF2C75FF),
             ),
           ),
           ListTile(
@@ -199,11 +199,33 @@ class _SlideMenuState extends State<SlideMenu> {
               ),
             ),
           ),
+          Column(
+            children: [
+              Divider(),
+              ListTile(
+                leading: Icon(Icons.upload),
+                title: Text("Upload photo"),
+                onTap: () async {
+                  String? imageUrl = await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ImageSelectionFormField();
+                    },
+                  );
+                  if (imageUrl != null) {
+                    setState(() {
+                      this.imageUrl = imageUrl;
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
           Divider(),
           ListTile(
             leading: Icon(Icons.password),
             title: Text("Change Password"),
-              onTap: () {
+            onTap: () {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -223,9 +245,7 @@ class _SlideMenuState extends State<SlideMenu> {
                   ),
                   actions: [
                     ElevatedButton(
-                      onPressed: () {
-                       
-                      },
+                      onPressed: () {},
                       child: Text('Save'),
                     ),
                   ],

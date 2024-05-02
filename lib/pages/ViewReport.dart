@@ -76,7 +76,9 @@ class _ViewReportsState extends State<ViewReports> {
       );
       var jsonResponse = jsonDecode(response.body);
       if (jsonResponse['status']) {
-        _getReport(widget.userId);
+        setState(() {
+          _report.removeWhere((report) => report['_id'] == id);
+        });
       }
     } catch (e) {
       print('Error deleting report: $e');
@@ -147,11 +149,9 @@ class _ViewReportsState extends State<ViewReports> {
                               motion: const ScrollMotion(),
                               dismissible: DismissiblePane(
                                 onDismissed: () {
-                                  setState(() {
-                                    _report.removeAt(index);
-                                  });
+                                  String reportId = _report[index]['_id'];
                                   if (_report.isNotEmpty) {
-                                    deleteReport(_report[index]['_id']);
+                                    deleteReport(reportId);
                                   }
                                 },
                               ),
@@ -168,17 +168,28 @@ class _ViewReportsState extends State<ViewReports> {
                               ],
                             ),
                             child: Card(
+                              color: Colors.grey[50],
+                              elevation: 3,
                               borderOnForeground: false,
                               child: ListTile(
                                 leading: _report[index]['image'] != null
-                                    ? ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        child: Image.network(
-                                          _report[index]['image'],
-                                          fit: BoxFit.cover,
-                                          width: 100,
-                                          height: 100,
+                                    ? GestureDetector(
+                                        onTap: () {
+                                          _showImageDialog(
+                                              context, _report[index]['image']);
+                                        },
+                                        child: Hero(
+                                          tag: 'imageHero$index',
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            child: Image.network(
+                                              _report[index]['image'],
+                                              fit: BoxFit.cover,
+                                              width: 100,
+                                              height: 100,
+                                            ),
+                                          ),
                                         ),
                                       )
                                     : Icon(Icons.task),
@@ -227,6 +238,31 @@ class _ViewReportsState extends State<ViewReports> {
           ),
         ],
       ),
+    );
+  }
+   void _showImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+            },
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.24,
+              height: MediaQuery.of(context).size.height * 0.24,
+              child: Hero(
+                tag: 'imageHero',
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

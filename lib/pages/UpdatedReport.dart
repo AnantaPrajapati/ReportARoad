@@ -21,6 +21,11 @@ class UpdatedReport extends StatefulWidget {
 
 class _ViewReportsState extends State<UpdatedReport> {
   List<dynamic> _report = [];
+    String rating = '';
+    String feedback ='';
+  TextEditingController ratingController = TextEditingController();
+  TextEditingController feedbackController = TextEditingController();
+  bool _isNotValidate = false;
 
   @override
   void initState() {
@@ -42,7 +47,7 @@ class _ViewReportsState extends State<UpdatedReport> {
   void _getReport(userId) async {
     try {
       var response = await http.get(
-        Uri.parse('${serverBaseUrl}getReport?userId=${widget.userId}'),
+        Uri.parse('${serverBaseUrl}resolvedReport?userId=${widget.userId}'),
         headers: {
           "Content-type": "application/json",
           "Cache-Control": "no-cache"
@@ -55,6 +60,12 @@ class _ViewReportsState extends State<UpdatedReport> {
         _report.forEach((report) {
           if (report['status'] == null) {
             report['status'] = 'pending';
+          }
+          if (report['rating'] == null) {
+            report['rating'] = 0;
+          }
+          if (report['feedback'] == null) {
+            report['feedback'] = '';
           }
         });
       });
@@ -76,12 +87,88 @@ class _ViewReportsState extends State<UpdatedReport> {
       );
       var jsonResponse = jsonDecode(response.body);
       if (jsonResponse['status']) {
-        _getReport(widget.userId);
+        setState(() {
+          _report.removeWhere((report) => report['_id'] == id);
+        });
       }
     } catch (e) {
       print('Error deleting report: $e');
     }
   }
+
+  // void submitRatingAndFeedback(
+  //     String reportId, int rating, String feedback) async {
+  //   try {
+  //     var requestBody = {
+  //       "reportId": reportId,
+  //       "rating": rating,
+  //       "feedback": feedback,
+  //     };
+  //     var response = await http.post(
+  //       Uri.parse('${serverBaseUrl}submitRatingAndFeedback'),
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode(requestBody),
+  //     );
+  //     var jsonResponse = jsonDecode(response.body);
+  //     if (jsonResponse['status']) {}
+  //   } catch (e) {
+  //     print('Error submitting rating and feedback: $e');
+  //   }
+  // }
+
+  
+  void submitRatingAndFeedback() async {
+    if (ratingController.text.isNotEmpty &&
+        feedbackController.text.isNotEmpty ) {
+      var regBody = {
+        // "email": widget.verEmail,
+        "rating": ratingController.text,
+        "feedback": feedbackController.text,
+      
+      };
+
+      var response = await http.post(
+          Uri.parse('${serverBaseUrl}ratingFeedback?userId=${widget.userId}'),
+          headers: {"Content-type": "application/json"},
+          body: jsonEncode(regBody));
+
+      if (response.statusCode == 200) {
+        ratingController.clear();
+        feedbackController.clear();
+        var jsonResponse = jsonDecode(response.body);
+        print(jsonResponse['status']);
+
+        if (jsonResponse['status'] != null && jsonResponse['status']) {
+          Navigator.pop(context);
+        }
+      } else {
+        var errorMessage = jsonDecode(response.body)['error'];
+        // ignore: use_build_context_synchronously
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(errorMessage),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } else {
+      setState(() {
+        _isNotValidate = true;
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -147,11 +234,9 @@ class _ViewReportsState extends State<UpdatedReport> {
                               motion: const ScrollMotion(),
                               dismissible: DismissiblePane(
                                 onDismissed: () {
-                                  setState(() {
-                                    _report.removeAt(index);
-                                  });
+                                  String reportId = _report[index]['_id'];
                                   if (_report.isNotEmpty) {
-                                    deleteReport(_report[index]['_id']);
+                                    deleteReport(reportId);
                                   }
                                 },
                               ),
@@ -168,17 +253,28 @@ class _ViewReportsState extends State<UpdatedReport> {
                               ],
                             ),
                             child: Card(
+                              color: Colors.grey[50],
+                              elevation: 3,
                               borderOnForeground: false,
                               child: ListTile(
                                 leading: _report[index]['image'] != null
-                                    ? ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        child: Image.network(
-                                          _report[index]['image'],
-                                          fit: BoxFit.cover,
-                                          width: 100,
-                                          height: 100,
+                                    ? GestureDetector(
+                                        onTap: () {
+                                          _showImageDialog(
+                                              context, _report[index]['image']);
+                                        },
+                                        child: Hero(
+                                          tag: 'imageHero$index',
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            child: Image.network(
+                                              _report[index]['image'],
+                                              fit: BoxFit.cover,
+                                              width: 100,
+                                              height: 100,
+                                            ),
+                                          ),
                                         ),
                                       )
                                     : Icon(Icons.task),
@@ -188,20 +284,24 @@ class _ViewReportsState extends State<UpdatedReport> {
                                   children: [
                                     Text('${_report[index]['desc']}'),
                                     Text(
-                                      'Status: ${_report[index]['status'] ?? 'pending'}',
+                                      'Status: ${_report[index]['status'] ?? 'resolved'}',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color:
-                                            (_report[index]['status'] == null ||
-                                                    _report[index]['status'] ==
-                                                        'pending')
-                                                ? Colors.orange
-                                                : (_report[index]['status'] ==
-                                                        'approved')
-                                                    ? Colors.green
-                                                    : Colors.red,
+                                        color: _report[index]['status'] ==
+                                                'resolved'
+                                            ? Colors.green
+                                            : Colors.green,
                                       ),
                                     ),
+                                    // Row(
+                                    //   children: [
+                                    //     Text(
+                                    //         'Rating: ${_report[index]['rating']}'),
+                                    //     SizedBox(width: 10),
+                                    //     Text(
+                                    //         'Feedback: ${_report[index]['feedback']}'),
+                                    //   ],
+                                    // ),
                                   ],
                                 ),
                                 trailing: Row(
@@ -214,7 +314,13 @@ class _ViewReportsState extends State<UpdatedReport> {
                                             '${_report[index]['severity']}: ${_report[index]['desc']}');
                                       },
                                     ),
-                                    Icon(Icons.arrow_back),
+                                    IconButton(
+                                      icon: Icon(Icons.rate_review),
+                                      onPressed: () {
+                                        _showRatingAndFeedbackDialog(
+                                            _report[index]['_id']);
+                                      },
+                                    ),
                                   ],
                                 ),
                               ),
@@ -227,6 +333,81 @@ class _ViewReportsState extends State<UpdatedReport> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showRatingAndFeedbackDialog(String reportId) {
+    int rating = 0;
+    String feedback = '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Rate and Provide Feedback"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                 controller: ratingController,
+                decoration: InputDecoration(labelText: 'Rating (1-5)'),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  rating = int.tryParse(value) ?? 0;
+                },
+              ),
+              TextField(
+                controller: feedbackController,
+                decoration: InputDecoration(labelText: 'Feedback'),
+                onChanged: (value) {
+                  feedback = value;
+                },
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Submit"),
+              onPressed: () {
+                submitRatingAndFeedback();
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+            },
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.24,
+              height: MediaQuery.of(context).size.height * 0.24,
+              child: Hero(
+                tag: 'imageHero',
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
