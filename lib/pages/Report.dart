@@ -76,6 +76,23 @@ class _ReportState extends State<Report> {
       ViewReports(userId:userId, token: token,);
       var jsonResponse = jsonDecode(response.body);
       print(jsonResponse['status']);
+       showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text(''),
+            content: Text("Report Sbumitted."),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
 
     } else {
       var errorMessage = jsonDecode(response.body)['error'];

@@ -21,8 +21,8 @@ class UpdatedReport extends StatefulWidget {
 
 class _ViewReportsState extends State<UpdatedReport> {
   List<dynamic> _report = [];
-    String rating = '';
-    String feedback ='';
+  String rating = '';
+  String feedback = '';
   TextEditingController ratingController = TextEditingController();
   TextEditingController feedbackController = TextEditingController();
   bool _isNotValidate = false;
@@ -96,79 +96,89 @@ class _ViewReportsState extends State<UpdatedReport> {
     }
   }
 
-  // void submitRatingAndFeedback(
-  //     String reportId, int rating, String feedback) async {
-  //   try {
-  //     var requestBody = {
-  //       "reportId": reportId,
-  //       "rating": rating,
-  //       "feedback": feedback,
-  //     };
-  //     var response = await http.post(
-  //       Uri.parse('${serverBaseUrl}submitRatingAndFeedback'),
-  //       headers: {"Content-Type": "application/json"},
-  //       body: jsonEncode(requestBody),
-  //     );
-  //     var jsonResponse = jsonDecode(response.body);
-  //     if (jsonResponse['status']) {}
-  //   } catch (e) {
-  //     print('Error submitting rating and feedback: $e');
-  //   }
-  // }
+void submitRatingAndFeedback(String reportId) async {
+  if (ratingController.text.isNotEmpty && feedbackController.text.isNotEmpty) {
+    var regBody = {
+      "rating": ratingController.text,
+      "feedback": feedbackController.text,
+    };
 
-  
-  void submitRatingAndFeedback() async {
-    if (ratingController.text.isNotEmpty &&
-        feedbackController.text.isNotEmpty ) {
-      var regBody = {
-        // "email": widget.verEmail,
-        "rating": ratingController.text,
-        "feedback": feedbackController.text,
-      
-      };
+    var response = await http.post(
+      Uri.parse('${serverBaseUrl}ratingFeedback?reportId=$reportId&userId=${widget.userId}'),
+      headers: {"Content-type": "application/json"},
+      body: jsonEncode(regBody),
+    );
 
-      var response = await http.post(
-          Uri.parse('${serverBaseUrl}ratingFeedback?userId=${widget.userId}'),
-          headers: {"Content-type": "application/json"},
-          body: jsonEncode(regBody));
-
-      if (response.statusCode == 200) {
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['success'] != null && jsonResponse['success']) {
         ratingController.clear();
         feedbackController.clear();
-        var jsonResponse = jsonDecode(response.body);
-        print(jsonResponse['status']);
-
-        if (jsonResponse['status'] != null && jsonResponse['status']) {
-          Navigator.pop(context);
-        }
-      } else {
-        var errorMessage = jsonDecode(response.body)['error'];
-        // ignore: use_build_context_synchronously
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Error'),
-              content: Text(errorMessage),
+              title: Text(''),
+              content: Text("Report Submitted successfully"),
               actions: <Widget>[
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('OK'),
+                  child: Text('OK'),
                 ),
               ],
             );
           },
         );
       }
-    } else {
-      setState(() {
-        _isNotValidate = true;
-      });
-    }
+       else {
+      var errorMessage = jsonDecode(response.body)['error'];
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text(errorMessage),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('You have already submitted a rating and feedback for this report'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } 
+    // else {
+    //   var errorMessage = 'An error occurred';
+    //   showDialog(
+    //     context: context,
+    //     builder: (BuildContext context) {
+    //       return AlertDialog(
+    //         title: Text('Error'),
+    //         content: Text(errorMessage),
+    //         actions: <Widget>[
+    //           TextButton(
+    //             onPressed: () {
+    //               Navigator.of(context).pop();
+    //             },
+    //             child: Text('OK'),
+    //           ),
+    //         ],
+    //       );
+    //     },
+    //   );
+    // }
+  } else {
+    setState(() {
+      _isNotValidate = true;
+    });
   }
-
+}
 
   @override
   Widget build(BuildContext context) {
@@ -349,7 +359,7 @@ class _ViewReportsState extends State<UpdatedReport> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               TextField(
-                 controller: ratingController,
+                controller: ratingController,
                 decoration: InputDecoration(labelText: 'Rating (1-5)'),
                 keyboardType: TextInputType.number,
                 onChanged: (value) {
@@ -369,7 +379,7 @@ class _ViewReportsState extends State<UpdatedReport> {
             TextButton(
               child: Text("Submit"),
               onPressed: () {
-                submitRatingAndFeedback();
+                submitRatingAndFeedback(reportId);
                 Navigator.of(context).pop();
               },
             ),
