@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class RerportSection extends StatelessWidget {
+class ReportSection extends StatelessWidget {
   final String ReportSectionName;
   final String iconPath;
 
   
-  const RerportSection({super.key,
+  const ReportSection({super.key,
   required this.ReportSectionName,
   required this.iconPath,
   });

@@ -16,8 +16,6 @@ class Verify extends StatefulWidget {
 }
 
 
-
-
 class _VerifyState extends State<Verify> {
    TextEditingController digitController = TextEditingController();
    bool _isNotValidate = false;
@@ -39,14 +37,31 @@ class _VerifyState extends State<Verify> {
       print(jsonResponse['status']);
       
       if (jsonResponse['status']) {
+        
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Success'),
+            content: Text('Email verified succesfully'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => Loginpage()),
         );
       }
     } else {
-      // Handle error response from the server
-      // For example, show an error message to the user
+
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -84,8 +99,8 @@ class _VerifyState extends State<Verify> {
           ),
           Container(
             constraints: const BoxConstraints(
-              maxWidth: 200, // Set the maximum width
-              maxHeight: 500, // Set the maximum height
+              maxWidth: 200, 
+              maxHeight: 500, 
             ),
             child: Image.asset(
               "assets/images/verify.png",
@@ -136,11 +151,11 @@ class _VerifyState extends State<Verify> {
                     controller: digitController,
                     keyboardType: TextInputType.number,
                     maxLength: 4,
-                    // obscureText: true, //hides the entered digits
+                    // obscureText: true, 
                     // ignore: unnecessary_const
                     decoration: const InputDecoration(
                       hintText: "Enter 4-digit code",
-                      counterText: "", // To hide the default character count
+                      counterText: "", 
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                     ),
@@ -159,8 +174,8 @@ class _VerifyState extends State<Verify> {
                     // ignore: deprecated_member_use
                     primary: const Color(0xFF2C75FF), // BUTTON COLOR
                     // ignore: deprecated_member_use
-                    onPrimary: Colors.white, // text color
-                    minimumSize: const Size(double.infinity, 50), // button size
+                    onPrimary: Colors.white, 
+                    minimumSize: const Size(double.infinity, 50), 
                   ),
                   onPressed: () {
                     verifyuser();

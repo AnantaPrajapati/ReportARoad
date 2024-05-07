@@ -8,12 +8,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:reportaroad/utils/CustomAppBar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ViewAddressPage extends StatefulWidget {
+class BloodBank extends StatefulWidget {
   @override
-  State<ViewAddressPage> createState() => _ViewAddressPageState();
+  State<BloodBank> createState() => _ViewAddressPageState();
 }
 
-class _ViewAddressPageState extends State<ViewAddressPage> {
+class _ViewAddressPageState extends State<BloodBank> {
     final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late GoogleMapController _mapController;
   late LatLng _userLocation = LatLng(0, 0);
@@ -45,7 +45,7 @@ class _ViewAddressPageState extends State<ViewAddressPage> {
   Future<void> _fetchNearbyPoliceStations() async {
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     final url =
-        'https://map-places.p.rapidapi.com/nearbysearch/json?location=${position.latitude}%2C${position.longitude}&radius=1500&keyword=hospital&type=hospital';
+        'https://map-places.p.rapidapi.com/nearbysearch/json?location=${position.latitude}%2C${position.longitude}&radius=1500&keyword=BloodBank&type=BloodBank';
 
     final response = await http.get(
       Uri.parse(url),
@@ -145,7 +145,7 @@ class _ViewAddressPageState extends State<ViewAddressPage> {
             backgroundColor: Color(0xFF2C75FF),
             elevation: 5,
             title: const Text(
-              "Hospital",
+              "Police Station",
               style: TextStyle(
                 color: Colors.white,
               ),

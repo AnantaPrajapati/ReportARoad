@@ -20,13 +20,13 @@ class BottomNav extends StatelessWidget {
     return Container(
         color: Color(0xFF2C75FF),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 8),
           child: GNav(
             backgroundColor: Color(0xFF2C75FF),
             color: Colors.white,
             activeColor: Colors.white,
             tabBackgroundColor: Colors.grey.withOpacity(0.5),
-            padding: EdgeInsets.all(13),
+            padding: EdgeInsets.all(10),
             gap: 5,
             selectedIndex: selectedIndex,
             onTabChange: onTabChange,
@@ -34,31 +34,38 @@ class BottomNav extends StatelessWidget {
               GButton(
                 icon: Icons.home,
                 text: 'Home',
-                iconSize: 30,
+                iconSize: 27,
+                textStyle: TextStyle(fontSize: 15, color: Colors.white),
+              ),
+                GButton(
+                icon: Icons.newspaper,
+                text: 'News',
+                  iconSize: 27,
                 textStyle: TextStyle(fontSize: 15, color: Colors.white),
               ),
               GButton(
                 icon: Icons.report,
                 text: 'Report',
-                  iconSize: 30,
+                  iconSize: 27,
                 textStyle: TextStyle(fontSize: 15, color: Colors.white),
               ),
               GButton(
                 icon: Icons.show_chart,
                 text: 'Reported',
-                  iconSize: 30,
+                  iconSize: 27,
                 textStyle: TextStyle(fontSize: 15, color: Colors.white),
               ),
                GButton(
                 icon: Icons.update,
                 text: 'Updates',
-                  iconSize: 30,
+                  iconSize: 27,
                 textStyle: TextStyle(fontSize: 15, color: Colors.white),
               ),
+              
               GButton(
                 icon: Icons.settings,
                 text: 'Settings',
-                    iconSize: 30,
+                    iconSize: 27,
                 textStyle: TextStyle(fontSize: 15, color: Colors.white),
               ),
             ],

@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:reportaroad/utils/reportsection.dart';
+import 'package:reportaroad/models/Ambulance.dart';
+import 'package:reportaroad/models/BloodBank.dart';
+import 'package:reportaroad/models/NearbyHospital.dart';
+import 'package:reportaroad/models/PoliceStation.dart';
+import 'package:reportaroad/utils/ReportSection.dart';
+
 
 class EmergencyNumber extends StatefulWidget {
   const EmergencyNumber({ Key? key}) : super(key: key);
@@ -16,11 +21,11 @@ class _EmergencyNumberState extends State<EmergencyNumber> {
 
 
   List myIncidentSection = [
-    ["Accident", "assets/images/warning.png", true],
-    ["Traffic Violation", "assets/images/emergency.png", true],
-     ["Accident", "assets/images/warning.png", true],
-    ["Traffic Violation", "assets/images/emergency.png", true],
-     ["Accident", "assets/images/warning.png", true],
+    ["Hospital", "assets/images/Hospital.png", true],
+    ["Blood Bank", "assets/images/Blood.png", true],
+     ["Fire Brigade", "assets/images/Fire.png", true],
+    ["Ambulance", "assets/images/Ambulance.png", true],
+     ["Police Station", "assets/images/Police.png", true],
     ["Traffic Violation", "assets/images/emergency.png", true],
   ];
 
@@ -69,7 +74,7 @@ class _EmergencyNumberState extends State<EmergencyNumber> {
                     const Expanded(
                       child: Center(
                         child: Text(
-                          "Emergenycy Number",
+                          "Emergency Number",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -86,17 +91,45 @@ class _EmergencyNumberState extends State<EmergencyNumber> {
             ),
 
             Expanded(
-                child: GridView.builder(
-                    itemCount:  myIncidentSection.length,
-                    padding: const EdgeInsets.all(25),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2),
-                    itemBuilder: (context, index) {
-                      return RerportSection(
-                          ReportSectionName:  myIncidentSection[index][0],
-                          iconPath:  myIncidentSection[index][1]);
-                    }))
+              child: GridView.builder(
+                itemCount: myIncidentSection.length,
+                padding: const EdgeInsets.all(25),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                ),
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      
+                      if (myIncidentSection[index][0] == "Hospital") {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => ViewAddressPage(),
+                        ));
+                      }
+                      if (myIncidentSection[index][0] == "Ambulance") {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => Ambulance(),
+                        ));
+                      }
+                      if (myIncidentSection[index][0] == "Blood Bank") {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => BloodBank(),
+                        ));
+                      }
+                      if (myIncidentSection[index][0] == "Police Station") {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => PoliceStation(),
+                        ));
+                      }
+                    },
+                    child: ReportSection( 
+                      ReportSectionName: myIncidentSection[index][0],
+                      iconPath: myIncidentSection[index][1],
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),

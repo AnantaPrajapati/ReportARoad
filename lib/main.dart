@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:reportaroad/models/NearbyHospital.dart';
-import 'package:reportaroad/models/nearbyplaces.dart';
 import 'package:reportaroad/pages/ViewReport.dart';
 import 'package:reportaroad/pages/home.dart';
 import 'package:reportaroad/userAuthentication/loginpage.dart';
@@ -10,7 +9,7 @@ import 'package:reportaroad/utils/map.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
-String serverBaseUrl='http://192.168.0.103:3000/';
+String serverBaseUrl='http://192.168.0.100:3000/';
 late String token;
 late String email;
 late String username;
@@ -57,9 +56,9 @@ class MyApp extends StatelessWidget {
               // '/': (context) => Map(),
         // '/': (context) => const InitialPage(),
       //   '/':(context) => const VerifyPass(verEmail: '',)
-        // '/': (context) => token != null ? Home(token: token!, id: '',) : const Loginpage(),
+        '/': (context) => token != null ? Home(token: token!, id: '',) : const Loginpage(),
         //  '/': (context) =>  NearByPlaces(),
-          '/': (context) => ViewAddressPage(),
+          // '/': (context) => ViewAddressPage(),
           // '/': (context) =>  ViewReports(userId:userId, token: token,),
         // '/signuppage': (context) => const Signuppage(),
       //   '/verify': (context) => const Verify(),

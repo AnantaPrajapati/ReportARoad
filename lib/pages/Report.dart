@@ -1,11 +1,10 @@
-import 'dart:io';
+
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:reportaroad/main.dart';
-import 'package:reportaroad/main.dart';
+import 'package:reportaroad/models/image.dart';
 import 'package:reportaroad/pages/ViewReport.dart';
 import 'package:reportaroad/utils/userlocation.dart';
 import '../utils/SeverityDropdown.dart';
@@ -28,7 +27,7 @@ class _ReportState extends State<Report> {
   final locationController = TextEditingController();
   final severityController = TextEditingController();
   final descController = TextEditingController();
-  String? imageUrl;
+  List<String> _imageUrls = [];
   bool _isNotValidate = false;
   final double horizontalPadding = 40;
   final double verticalPadding = 25;
@@ -54,13 +53,13 @@ class _ReportState extends State<Report> {
   if (locationController.text.isNotEmpty &&
       severityController.text.isNotEmpty &&
       descController.text.isNotEmpty &&
-      imageUrl != null) {
+      _imageUrls != null) {
     var reqBody = {
       "userId": widget.userId,
       "location": locationController.text,
       "severity": severityController.text,
       "desc": descController.text,
-      "image": imageUrl!,
+      "images": _imageUrls,
       "status": "pending", 
     };
 
@@ -76,23 +75,23 @@ class _ReportState extends State<Report> {
       ViewReports(userId:userId, token: token,);
       var jsonResponse = jsonDecode(response.body);
       print(jsonResponse['status']);
-       showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text(''),
-            content: Text("Report Sbumitted."),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(''),
+              content: Text("Report Submitted successfully"),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
 
     } else {
       var errorMessage = jsonDecode(response.body)['error'];
@@ -125,37 +124,28 @@ class _ReportState extends State<Report> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+    key: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight + 10),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 0),
+          child: AppBar(
+            backgroundColor: Color(0xFF2C75FF),
+            elevation: 5,
+            title: const Text(
+              "Report",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            centerTitle: true,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              decoration: const BoxDecoration(
-                color: const Color(0xFF2C75FF),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: horizontalPadding,
-                  vertical: 20,
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          "Report",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -223,10 +213,11 @@ class _ReportState extends State<Report> {
                           ),
 
                           SizedBox(height: 20),
-                          ImageSelectionFormField(
-                            onImageUploaded: (imageUrl) {
+                          ImageForm(
+                            onImageUploaded: (List<String> imageUrls) {
                               setState(() {
-                                this.imageUrl = imageUrl;
+                               _imageUrls = imageUrls;
+
                               });
                             },
                           ),

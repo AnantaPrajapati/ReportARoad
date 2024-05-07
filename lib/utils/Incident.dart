@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reportaroad/main.dart';
 import 'package:reportaroad/pages/IncidentReport.dart';
 import 'package:reportaroad/utils/reportsection.dart';
 
@@ -98,12 +99,12 @@ class _ReportIncidentState extends State<ReportIncident> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => IncidentReport(
-                            email:'',
+                            userId: userId,
                           ),
                         ),
                       );
                     },
-                    child: RerportSection(
+                    child: ReportSection(
                       ReportSectionName: myIncidentSection[index][0],
                       iconPath: myIncidentSection[index][1],
                     ),

@@ -93,6 +93,30 @@ class _SlideMenuState extends State<SlideMenu> {
         firstNameController.clear();
         lastNameController.clear();
         usernameController.clear();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Colors.grey[200], 
+              title: Text(''),
+              content: Text("Profile Changed successfully!!!"),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    'OK',
+                    style: TextStyle(
+                        backgroundColor: Color(0xFF2C75FF),
+                        ), 
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+
         var jsonResponse = jsonDecode(response.body);
         print(jsonResponse['status']);
 
@@ -153,7 +177,8 @@ class _SlideMenuState extends State<SlideMenu> {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: Text("Edit Details"),
+                  backgroundColor: Colors.grey[200],
+                  title: Text("Edit Profile"),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -172,11 +197,25 @@ class _SlideMenuState extends State<SlideMenu> {
                     ],
                   ),
                   actions: [
-                    ElevatedButton(
-                      onPressed: () {
-                        updateProfile();
-                      },
-                      child: Text('Save'),
+                    ButtonBar(
+                      alignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ButtonTheme(
+                          minWidth: 100,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              updateProfile();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              primary: Color.fromARGB(255, 13, 76, 211),
+                            ),
+                            child: Text(
+                              'Save',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -199,6 +238,7 @@ class _SlideMenuState extends State<SlideMenu> {
               ),
             ),
           ),
+            
           Column(
             children: [
               Divider(),
@@ -209,7 +249,7 @@ class _SlideMenuState extends State<SlideMenu> {
                   String? imageUrl = await showDialog(
                     context: context,
                     builder: (BuildContext context) {
-                      return ImageSelectionFormField();
+                      return ImageSelectionFormField(onImageUploaded: (imageUrl) {  },);
                     },
                   );
                   if (imageUrl != null) {
@@ -229,6 +269,7 @@ class _SlideMenuState extends State<SlideMenu> {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
+                  backgroundColor: Colors.grey[300],
                   title: Text("Change Password"),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -244,9 +285,25 @@ class _SlideMenuState extends State<SlideMenu> {
                     ],
                   ),
                   actions: [
-                    ElevatedButton(
-                      onPressed: () {},
-                      child: Text('Save'),
+                    ButtonBar(
+                      alignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ButtonTheme(
+                          minWidth: 100,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // updateProfile();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              primary: Color.fromARGB(255, 13, 76, 211),
+                            ),
+                            child: Text(
+                              'Change',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -263,6 +320,51 @@ class _SlideMenuState extends State<SlideMenu> {
             //   MaterialPageRoute(builder: (context) => ViewReports(userId: '',)),
             // );
             //   },
+          ),
+            Divider(),
+            ListTile(
+            leading: Icon(Icons.edit),
+            title: Text("Delete Account"),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: Colors.grey[200],
+                  title: Text("Enter your email address"),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: usernameController,
+                        decoration: InputDecoration(labelText: 'E-mail'),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    ButtonBar(
+                      alignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ButtonTheme(
+                          minWidth: 100,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // updateProfile();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              primary: Color.fromARGB(255, 13, 76, 211),
+                            ),
+                            child: Text(
+                              'Save',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           Divider(),
           ListTile(

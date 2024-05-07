@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:reportaroad/main.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:dotted_border/dotted_border.dart';
 
 class ViewReports extends StatefulWidget {
   final String userId;
@@ -20,6 +21,7 @@ class ViewReports extends StatefulWidget {
 }
 
 class _ViewReportsState extends State<ViewReports> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<dynamic> _report = [];
 
   @override
@@ -88,36 +90,27 @@ class _ViewReportsState extends State<ViewReports> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight + 10),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 0),
+          child: AppBar(
+            backgroundColor: Color(0xFF2C75FF),
+            elevation: 5,
+            title: const Text(
+              "Recent Report",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            centerTitle: true,
+          ),
+        ),
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              color: const Color(0xFF2C75FF),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 40,
-                vertical: 20,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        "Report",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 40),
             child: Row(
@@ -172,11 +165,12 @@ class _ViewReportsState extends State<ViewReports> {
                               elevation: 3,
                               borderOnForeground: false,
                               child: ListTile(
-                                leading: _report[index]['image'] != null
+                                leading: _report[index]['images'] != null && _report[index]['images'].isNotEmpty
                                     ? GestureDetector(
+                                      
                                         onTap: () {
-                                          _showImageDialog(
-                                              context, _report[index]['image']);
+                                        
+                                        _showReportDetailsDialog(_report[index]);
                                         },
                                         child: Hero(
                                           tag: 'imageHero$index',
@@ -184,7 +178,7 @@ class _ViewReportsState extends State<ViewReports> {
                                             borderRadius:
                                                 BorderRadius.circular(8.0),
                                             child: Image.network(
-                                              _report[index]['image'],
+                                              _report[index]['images'][0],
                                               fit: BoxFit.cover,
                                               width: 100,
                                               height: 100,
@@ -193,15 +187,36 @@ class _ViewReportsState extends State<ViewReports> {
                                         ),
                                       )
                                     : Icon(Icons.task),
-                                title: Text('${_report[index]['severity']}'),
+                                title: Text('Pothole Report',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        decoration: TextDecoration.underline)),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('${_report[index]['desc']}'),
+                                    Text(
+                                        'Severity: ${_report[index]['severity']}',
+                                        style: TextStyle(
+                                          fontStyle: FontStyle.normal,
+                                        )),
+                                    Text(
+                                        'Location: ${_report[index]['location']}',
+                                        style: TextStyle(
+                                          color: Color(0xFF2C75FF),
+                                        )),
+                                    Text(
+                                        'Description: ${_report[index]['desc']}',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.normal,
+                                            fontSize: 15,
+                                            
+                                              )),
                                     Text(
                                       'Status: ${_report[index]['status'] ?? 'pending'}',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
+                                        fontSize: 15,
                                         color:
                                             (_report[index]['status'] == null ||
                                                     _report[index]['status'] ==
@@ -222,7 +237,7 @@ class _ViewReportsState extends State<ViewReports> {
                                       icon: Icon(Icons.share),
                                       onPressed: () {
                                         shareReport(
-                                            '${_report[index]['severity']}: ${_report[index]['desc']}');
+                                            '${_report[index]['severity']}: ${_report[index]['desc']}: ${_report[index]['location']}: ${_report[index]['image']}');
                                       },
                                     ),
                                     Icon(Icons.arrow_back),
@@ -240,29 +255,113 @@ class _ViewReportsState extends State<ViewReports> {
       ),
     );
   }
-   void _showImageDialog(BuildContext context, String imageUrl) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: GestureDetector(
-            onTap: () {
-              Navigator.of(context).pop();
-            },
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.24,
-              height: MediaQuery.of(context).size.height * 0.24,
-              child: Hero(
-                tag: 'imageHero',
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.contain,
-                ),
-              ),
+
+  
+void _showImageDialog(BuildContext context, List<String> imageUrls, int index) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: ListView.builder(
+              itemCount: imageUrls.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.0),
+                      border: Border.all(color: Colors.grey),
+                    ),
+                    child: DottedBorder(
+                      color: Colors.grey,
+                      strokeWidth: 1,
+                      dashPattern: [4, 4],
+                      child: Image.network(
+                        imageUrls[index],
+                        fit: BoxFit.contain,
+                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          } else {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
+void _showReportDetailsDialog(Map<String, dynamic> reportDetails) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Report Details'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (reportDetails['images'] != null)
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 8.0,
+                  children: List.generate(
+                    reportDetails['images'].length,
+                    (index) => GestureDetector(
+                      onTap: () {
+                        _showImageDialog(context, reportDetails['images'], index);
+                      },
+                      child: Hero(
+                        tag: 'imageHero${reportDetails['_id']}_$index',
+                        child: Image.network(
+                          reportDetails['images'][index],
+                          fit: BoxFit.cover,
+                          width: 80,
+                          height: 80,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              SizedBox(height: 10),
+              Text('Severity: ${reportDetails['severity']}'),
+              Text('Location: ${reportDetails['location']}'),
+              Text('Description: ${reportDetails['desc']}'),
+              Text('Status: ${reportDetails['status'] ?? 'resolved'}'),
+              if (reportDetails['rating'] != null)
+                Text('Rating: ${reportDetails['rating']}'),
+              if (reportDetails['feedback'] != null)
+                Text('Feedback: ${reportDetails['feedback']}'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Close'),
+          ),
+        ],
+      );
+    },
+  );
+}
 }

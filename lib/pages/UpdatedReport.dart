@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:reportaroad/main.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:dotted_border/dotted_border.dart';
 
 class UpdatedReport extends StatefulWidget {
   final String userId;
@@ -20,6 +21,7 @@ class UpdatedReport extends StatefulWidget {
 }
 
 class _ViewReportsState extends State<UpdatedReport> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<dynamic> _report = [];
   String rating = '';
   String feedback = '';
@@ -96,30 +98,72 @@ class _ViewReportsState extends State<UpdatedReport> {
     }
   }
 
-void submitRatingAndFeedback(String reportId) async {
-  if (ratingController.text.isNotEmpty && feedbackController.text.isNotEmpty) {
-    var regBody = {
-      "rating": ratingController.text,
-      "feedback": feedbackController.text,
-    };
+  void submitRatingAndFeedback(String reportId) async {
+    if (ratingController.text.isNotEmpty &&
+        feedbackController.text.isNotEmpty) {
+      var regBody = {
+        "rating": ratingController.text,
+        "feedback": feedbackController.text,
+      };
 
-    var response = await http.post(
-      Uri.parse('${serverBaseUrl}ratingFeedback?reportId=$reportId&userId=${widget.userId}'),
-      headers: {"Content-type": "application/json"},
-      body: jsonEncode(regBody),
-    );
+      var response = await http.post(
+        Uri.parse(
+            '${serverBaseUrl}ratingFeedback?reportId=$reportId&userId=${widget.userId}'),
+        headers: {"Content-type": "application/json"},
+        body: jsonEncode(regBody),
+      );
 
-    if (response.statusCode == 200) {
-      var jsonResponse = jsonDecode(response.body);
-      if (jsonResponse['success'] != null && jsonResponse['success']) {
-        ratingController.clear();
-        feedbackController.clear();
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['success'] != null && jsonResponse['success']) {
+          ratingController.clear();
+          feedbackController.clear();
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(''),
+                content: Text("Report Submitted successfully"),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          var errorMessage = jsonDecode(response.body)['error'];
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Error'),
+                content: Text(errorMessage),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(
+                        'You have already submitted a rating and feedback for this report'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      } else {
+        var errorMessage = 'An error occurred';
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text(''),
-              content: Text("Report Submitted successfully"),
+              title: Text('Error'),
+              content: Text(errorMessage),
               actions: <Widget>[
                 TextButton(
                   onPressed: () {
@@ -132,87 +176,37 @@ void submitRatingAndFeedback(String reportId) async {
           },
         );
       }
-       else {
-      var errorMessage = jsonDecode(response.body)['error'];
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Error'),
-              content: Text(errorMessage),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('You have already submitted a rating and feedback for this report'),
-                ),
-              ],
-            );
-          },
-        );
-      }
-    } 
-    // else {
-    //   var errorMessage = 'An error occurred';
-    //   showDialog(
-    //     context: context,
-    //     builder: (BuildContext context) {
-    //       return AlertDialog(
-    //         title: Text('Error'),
-    //         content: Text(errorMessage),
-    //         actions: <Widget>[
-    //           TextButton(
-    //             onPressed: () {
-    //               Navigator.of(context).pop();
-    //             },
-    //             child: Text('OK'),
-    //           ),
-    //         ],
-    //       );
-    //     },
-    //   );
-    // }
-  } else {
-    setState(() {
-      _isNotValidate = true;
-    });
+    } else {
+      setState(() {
+        _isNotValidate = true;
+      });
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight + 10),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 0),
+          child: AppBar(
+            backgroundColor: Color(0xFF2C75FF),
+            elevation: 5,
+            title: const Text(
+              "Updated Report",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            centerTitle: true,
+          ),
+        ),
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              color: const Color(0xFF2C75FF),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 40,
-                vertical: 20,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        "Report",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 40),
             child: Row(
@@ -262,37 +256,63 @@ void submitRatingAndFeedback(String reportId) async {
                                 ),
                               ],
                             ),
+                            
                             child: Card(
                               color: Colors.grey[50],
                               elevation: 3,
                               borderOnForeground: false,
                               child: ListTile(
-                                leading: _report[index]['image'] != null
-                                    ? GestureDetector(
-                                        onTap: () {
-                                          _showImageDialog(
-                                              context, _report[index]['image']);
-                                        },
-                                        child: Hero(
+                                leading: _report[index]['images'] != null && _report[index]['images'].isNotEmpty
+                                ? GestureDetector(
+                                  onTap: () {
+                                    _showReportDetailsDialog(_report[index]);
+                                  },
+                                  child:  Hero(
                                           tag: 'imageHero$index',
                                           child: ClipRRect(
                                             borderRadius:
                                                 BorderRadius.circular(8.0),
                                             child: Image.network(
-                                              _report[index]['image'],
+                                              _report[index]['images'][0],
                                               fit: BoxFit.cover,
                                               width: 100,
                                               height: 100,
                                             ),
                                           ),
-                                        ),
-                                      )
-                                    : Icon(Icons.task),
-                                title: Text('${_report[index]['severity']}'),
+                                        )
+                                  
+                                )
+                                  : Icon(Icons.task),
+                                title: const Text(
+                                  'Your reported incident has been fixed',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('${_report[index]['desc']}'),
+                                    Text(
+                                      'Severity: ${_report[index]['severity']}',
+                                      style: const TextStyle(
+                                        fontStyle: FontStyle.normal,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Location: ${_report[index]['location']}',
+                                      style: const TextStyle(
+                                        color: Color(0xFF2C75FF),
+                                      ),
+                                    ),
+                                    Text(
+                                      'Description: ${_report[index]['desc']}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        fontSize: 15,
+                                      ),
+                                    ),
                                     Text(
                                       'Status: ${_report[index]['status'] ?? 'resolved'}',
                                       style: TextStyle(
@@ -303,15 +323,6 @@ void submitRatingAndFeedback(String reportId) async {
                                             : Colors.green,
                                       ),
                                     ),
-                                    // Row(
-                                    //   children: [
-                                    //     Text(
-                                    //         'Rating: ${_report[index]['rating']}'),
-                                    //     SizedBox(width: 10),
-                                    //     Text(
-                                    //         'Feedback: ${_report[index]['feedback']}'),
-                                    //   ],
-                                    // ),
                                   ],
                                 ),
                                 trailing: Row(
@@ -353,71 +364,166 @@ void submitRatingAndFeedback(String reportId) async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Rate and Provide Feedback"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextField(
-                controller: ratingController,
-                decoration: InputDecoration(labelText: 'Rating (1-5)'),
-                keyboardType: TextInputType.number,
-                onChanged: (value) {
-                  rating = int.tryParse(value) ?? 0;
+        return Theme(
+          data: ThemeData(
+            dialogBackgroundColor: Colors.grey[200],
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                backgroundColor: Color(0xFF2C75FF),
+                primary: Colors.white,
+              ),
+            ),
+          ),
+          child: AlertDialog(
+            title: Text("Rate and Provide Feedback"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextField(
+                  controller: ratingController,
+                  decoration: InputDecoration(labelText: 'Rating (1-5)'),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    rating = int.tryParse(value) ?? 0;
+                  },
+                ),
+                TextField(
+                  controller: feedbackController,
+                  decoration: InputDecoration(labelText: 'Feedback'),
+                  onChanged: (value) {
+                    feedback = value;
+                  },
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text("Submit"),
+                onPressed: () {
+                  submitRatingAndFeedback(reportId);
+                  Navigator.of(context).pop();
                 },
               ),
-              TextField(
-                controller: feedbackController,
-                decoration: InputDecoration(labelText: 'Feedback'),
-                onChanged: (value) {
-                  feedback = value;
+              TextButton(
+                child: Text("Cancel"),
+                onPressed: () {
+                  Navigator.of(context).pop();
                 },
               ),
             ],
           ),
-          actions: <Widget>[
-            TextButton(
-              child: Text("Submit"),
-              onPressed: () {
-                submitRatingAndFeedback(reportId);
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text("Cancel"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
         );
       },
     );
   }
 
-  void _showImageDialog(BuildContext context, String imageUrl) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: GestureDetector(
-            onTap: () {
-              Navigator.of(context).pop();
-            },
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.24,
-              height: MediaQuery.of(context).size.height * 0.24,
-              child: Hero(
-                tag: 'imageHero',
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.contain,
-                ),
-              ),
+ void _showImageDialog(BuildContext context, List<String> imageUrls, int index) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: ListView.builder(
+              itemCount: imageUrls.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.0),
+                      border: Border.all(color: Colors.grey),
+                    ),
+                    child: DottedBorder(
+                      color: Colors.grey,
+                      strokeWidth: 1,
+                      dashPattern: [4, 4],
+                      child: Image.network(
+                        imageUrls[index],
+                        fit: BoxFit.contain,
+                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          } else {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
+
+
+void _showReportDetailsDialog(Map<String, dynamic> reportDetails) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Report Details'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (reportDetails['images'] != null)
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 8.0,
+                  children: List.generate(
+                    reportDetails['images'].length,
+                    (index) => GestureDetector(
+                      onTap: () {
+                        _showImageDialog(context, reportDetails['images'], index);
+                      },
+                      child: Hero(
+                        tag: 'imageHero${reportDetails['_id']}_$index',
+                        child: Image.network(
+                          reportDetails['images'][index],
+                          fit: BoxFit.cover,
+                          width: 80,
+                          height: 80,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              SizedBox(height: 10),
+              Text('Severity: ${reportDetails['severity']}'),
+              Text('Location: ${reportDetails['location']}'),
+              Text('Description: ${reportDetails['desc']}'),
+              Text('Status: ${reportDetails['status'] ?? 'resolved'}'),
+              if (reportDetails['rating'] != null)
+                Text('Rating: ${reportDetails['rating']}'),
+              if (reportDetails['feedback'] != null)
+                Text('Feedback: ${reportDetails['feedback']}'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Close'),
+          ),
+        ],
+      );
+    },
+  );
+}
 }

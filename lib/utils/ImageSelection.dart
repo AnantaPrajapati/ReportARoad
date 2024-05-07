@@ -133,14 +133,14 @@ class _ImageSelectionFormFieldState extends State<ImageSelectionFormField> {
                   SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {
-                      _clearImage(); // Call the method to clear the image
+                      _clearImage(); 
                     },
                     child: const Text(
                       "Clear Image",
                       style: TextStyle(fontSize: 16),
                     ),
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.red, // Use red color for the button
+                      primary: Colors.red, 
                       onPrimary: Colors.white,
                       minimumSize: const Size(double.infinity, 50),
                     ),

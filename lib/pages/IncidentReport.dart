@@ -11,14 +11,15 @@ import '../utils/map.dart';
 
 
 class IncidentReport extends StatefulWidget {
-  final String email;
-  const IncidentReport({super.key, required this.email});
+  final String userId;
+  const IncidentReport({super.key, required this.userId});
 
   @override
   State<IncidentReport> createState() => _ReportState();
 }
 
 class _ReportState extends State<IncidentReport> {
+   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final locationController = TextEditingController();
   final titleController = TextEditingController();
   final descController = TextEditingController();
@@ -26,6 +27,7 @@ class _ReportState extends State<IncidentReport> {
   bool _isNotValidate = false;
   final double horizontalPadding = 40;
   final double verticalPadding = 25;
+   late String userId;
 
   GoogleMapController? mapController;
 
@@ -41,7 +43,7 @@ void save() async {
       descController.text.isNotEmpty &&
       imageUrl != null){
       var reqBody = {
-        "email": email,
+       "userId": widget.userId,
       "location": locationController.text,
       "title": titleController.text,
       "desc": descController.text,
@@ -104,57 +106,53 @@ void save() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+       key: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight + 10),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 0),
+          child: AppBar(
+            backgroundColor: Color(0xFF2C75FF),
+            elevation: 5,
+            title: const Text(
+              "Report",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            centerTitle: true,
+             leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.white,),
+            onPressed: () {
+              Navigator.of(context).pop(); 
+            },
+          ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              decoration: const BoxDecoration(
-                color: const Color(0xFF2C75FF),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: horizontalPadding,
-                  vertical: 20,
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          "Report",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-           
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                      SizedBox(height: 20.0),
-              Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: horizontalPadding),
-                      child: Container(
-                        height: 400,
-                        width: double.infinity,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onVerticalDragUpdate: (_) {},
-                          child: Map(mapController: mapController, markers: [],),
-                        ),
-                      ),
-                    ),
+              // Padding(
+              //         padding:
+              //             EdgeInsets.symmetric(horizontal: horizontalPadding),
+              //         child: Container(
+              //           height: 400,
+              //           width: double.infinity,
+              //           child: GestureDetector(
+              //             behavior: HitTestBehavior.translucent,
+              //             onVerticalDragUpdate: (_) {},
+              //             child: Map(mapController: mapController, markers: [],),
+              //           ),
+              //         ),
+              //       ),
                     Userlocationpage(
                         onLocationSelected: (address, latitude, longitude) {
                       setLocation(address, latitude, longitude);
