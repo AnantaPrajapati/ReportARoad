@@ -140,19 +140,19 @@ void save() async {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                      SizedBox(height: 20.0),
-              // Padding(
-              //         padding:
-              //             EdgeInsets.symmetric(horizontal: horizontalPadding),
-              //         child: Container(
-              //           height: 400,
-              //           width: double.infinity,
-              //           child: GestureDetector(
-              //             behavior: HitTestBehavior.translucent,
-              //             onVerticalDragUpdate: (_) {},
-              //             child: Map(mapController: mapController, markers: [],),
-              //           ),
-              //         ),
-              //       ),
+              Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: Container(
+                        height: 400,
+                        width: double.infinity,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onVerticalDragUpdate: (_) {},
+                          child: Map(mapController: mapController, markers: [],),
+                        ),
+                      ),
+                    ),
                     Userlocationpage(
                         onLocationSelected: (address, latitude, longitude) {
                       setLocation(address, latitude, longitude);

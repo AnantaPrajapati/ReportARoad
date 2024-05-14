@@ -4,7 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:reportaroad/main.dart';
 import 'package:reportaroad/models/NewsWidget.dart';
+import 'package:reportaroad/utils/videoPlayer.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:video_player/video_player.dart';
 
 class News extends StatefulWidget {
    final String userId;
@@ -53,14 +55,12 @@ class _NewsState extends State<News> {
 
       var jsonResponse = jsonDecode(response.body);
       if (jsonResponse['success'] == true) {
-      // Extract the list of news items from the response
       var newsList = jsonResponse['news'];
 
       setState(() {
         _news = newsList;
       });
     } else {
-      // Handle the case where the response indicates failure
       print('Failed to fetch news: ${jsonResponse['error']}');
     }
   } catch (e) {
@@ -135,6 +135,7 @@ Widget build(BuildContext context) {
                     return NewsWidget(
                       imageUrl: newsItem['image'],
                       title: newsItem['title'],
+                      location: newsItem['location'],
                       description: newsItem['desc'],
                     );
                   }).toList(),
@@ -156,13 +157,15 @@ Widget build(BuildContext context) {
               Navigator.of(context).pop();
             },
             child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.24,
-              height: MediaQuery.of(context).size.height * 0.24,
-              child: Hero(
-                tag: 'imageHero',
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.contain,
+             width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: imageUrl.endsWith('.mp4') || imageUrl.endsWith('.mov')
+                ? VideoPlayerWidget(url: imageUrl)
+                : Hero(
+                    tag: 'imageHero',
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.contain,
                 ),
               ),
             ),

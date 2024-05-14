@@ -8,7 +8,6 @@ import 'package:reportaroad/models/image.dart';
 import 'package:reportaroad/pages/ViewReport.dart';
 import 'package:reportaroad/utils/userlocation.dart';
 import '../utils/SeverityDropdown.dart';
-import '../utils/ImageSelection.dart';
 import '../utils/map.dart';
 
 class Report extends StatefulWidget {

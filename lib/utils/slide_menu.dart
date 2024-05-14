@@ -1,18 +1,20 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:reportaroad/main.dart';
 import 'package:http/http.dart' as http;
-import 'package:reportaroad/pages/ViewReport.dart';
+import 'package:reportaroad/pages/ReportHistory.dart';
 import 'package:reportaroad/userAuthentication/loginpage.dart';
 import 'package:reportaroad/utils/ImageSelection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SlideMenu extends StatefulWidget {
   final String userId;
+  final String email;
   String id;
 
-  SlideMenu({Key? key, required this.id, required this.userId})
+  SlideMenu({Key? key, required this.id, required this.userId, required this.email})
       : super(key: key);
 
   @override
@@ -27,8 +29,12 @@ class _SlideMenuState extends State<SlideMenu> {
   TextEditingController firstNameController = TextEditingController();
   TextEditingController lastNameController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
+  TextEditingController  oldpasswordController = TextEditingController();
+  TextEditingController  newpasswordController = TextEditingController();
+    TextEditingController  emailController = TextEditingController();
   bool _isNotValidate = false;
   String? imageUrl;
+  bool isNotificationEnabled = true;
 
   @override
   void initState() {
@@ -97,7 +103,7 @@ class _SlideMenuState extends State<SlideMenu> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              backgroundColor: Colors.grey[200], 
+              backgroundColor: Colors.grey[200],
               title: Text(''),
               content: Text("Profile Changed successfully!!!"),
               actions: <Widget>[
@@ -108,8 +114,159 @@ class _SlideMenuState extends State<SlideMenu> {
                   child: Text(
                     'OK',
                     style: TextStyle(
-                        backgroundColor: Color(0xFF2C75FF),
-                        ), 
+                      backgroundColor: Color(0xFF2C75FF),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+
+        var jsonResponse = jsonDecode(response.body);
+        print(jsonResponse['status']);
+
+        if (jsonResponse['status'] != null && jsonResponse['status']) {
+          Navigator.pop(context);
+        }
+      } else {
+        var errorMessage = jsonDecode(response.body)['error'];
+        // ignore: use_build_context_synchronously
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(errorMessage),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } else {
+      setState(() {
+        _isNotValidate = true;
+      });
+    }
+  }
+
+ void DeleteAccount() async {
+    if (emailController.text.isNotEmpty ) {
+      var regBody = {
+        // "email": widget.verEmail,
+        "email": emailController.text
+      };
+
+      var response = await http.post(
+          Uri.parse('${serverBaseUrl}DeleteAccount?userId=${widget.userId}'),
+          headers: {"Content-type": "application/json"},
+          body: jsonEncode(regBody));
+
+      if (response.statusCode == 200) {
+        emailController.clear();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Colors.grey[200],
+              title: Text(''),
+              content: Text("User Deleted successfully!!!"),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    'OK',
+                    style: TextStyle(
+                   color: Color(0xFF2C75FF),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+
+        var jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['success'] = true) {
+          Navigator.pop(context);
+           Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => Loginpage()),
+          );
+        }
+      } else {
+        var errorMessage = jsonDecode(response.body)['error'];
+        // ignore: use_build_context_synchronously
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(errorMessage),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } else {
+      setState(() {
+        _isNotValidate = true;
+      });
+    }
+  }
+
+void changePassword() async {
+    if (oldpasswordController.text.isNotEmpty &&
+        newpasswordController.text.isNotEmpty 
+       ) {
+      var regBody = {
+        // "email": widget.verEmail,
+        "password": oldpasswordController.text,
+        "Cpassword": newpasswordController.text,
+      };
+
+      var response = await http.post(
+          Uri.parse('${serverBaseUrl}ChangePassword?email=${widget.email}'),
+          headers: {"Content-type": "application/json"},
+          body: jsonEncode(regBody));
+
+      if (response.statusCode == 200) {
+        oldpasswordController.clear();
+        newpasswordController.clear();
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Colors.grey[200],
+              title: Text(''),
+              content: Text("Password Changed successfully!!!"),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    'OK',
+                    style: TextStyle(
+                      color: Color(0xFF2C75FF),
+                    ),
                   ),
                 ),
               ],
@@ -238,7 +395,6 @@ class _SlideMenuState extends State<SlideMenu> {
               ),
             ),
           ),
-            
           Column(
             children: [
               Divider(),
@@ -249,7 +405,9 @@ class _SlideMenuState extends State<SlideMenu> {
                   String? imageUrl = await showDialog(
                     context: context,
                     builder: (BuildContext context) {
-                      return ImageSelectionFormField(onImageUploaded: (imageUrl) {  },);
+                      return ImageSelectionFormField(
+                        onImageUploaded: (imageUrl) {},
+                      );
                     },
                   );
                   if (imageUrl != null) {
@@ -275,12 +433,12 @@ class _SlideMenuState extends State<SlideMenu> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       TextFormField(
-                        controller: lastNameController,
-                        decoration: InputDecoration(labelText: 'Old Password'),
+                        controller: oldpasswordController,
+                        decoration: InputDecoration(labelText: 'Password'),
                       ),
                       TextFormField(
-                        controller: usernameController,
-                        decoration: InputDecoration(labelText: 'New Password'),
+                        controller: newpasswordController,
+                        decoration: InputDecoration(labelText: 'Confirm Password'),
                       ),
                     ],
                   ),
@@ -292,7 +450,7 @@ class _SlideMenuState extends State<SlideMenu> {
                           minWidth: 100,
                           child: ElevatedButton(
                             onPressed: () {
-                              // updateProfile();
+                              changePassword();
                             },
                             style: ElevatedButton.styleFrom(
                               primary: Color.fromARGB(255, 13, 76, 211),
@@ -310,19 +468,19 @@ class _SlideMenuState extends State<SlideMenu> {
               );
             },
           ),
+          // Divider(),
+          // ListTile(
+          //   leading: Icon(Icons.report),
+          //   title: Text("Report history"),
+          //     onTap: () {
+          //     Navigator.push(
+          //     context,
+          //     MaterialPageRoute(builder: (context) => ReportHistory(userId: widget.userId,)),
+          //   );
+          //     },
+          // ),
           Divider(),
           ListTile(
-            leading: Icon(Icons.report),
-            title: Text("View Report"),
-            //   onTap: () {
-            //   Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => ViewReports(userId: '',)),
-            // );
-            //   },
-          ),
-            Divider(),
-            ListTile(
             leading: Icon(Icons.edit),
             title: Text("Delete Account"),
             onTap: () {
@@ -335,7 +493,7 @@ class _SlideMenuState extends State<SlideMenu> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       TextFormField(
-                        controller: usernameController,
+                        controller: emailController,
                         decoration: InputDecoration(labelText: 'E-mail'),
                       ),
                     ],
@@ -348,7 +506,7 @@ class _SlideMenuState extends State<SlideMenu> {
                           minWidth: 100,
                           child: ElevatedButton(
                             onPressed: () {
-                              // updateProfile();
+                              DeleteAccount();
                             },
                             style: ElevatedButton.styleFrom(
                               primary: Color.fromARGB(255, 13, 76, 211),
@@ -378,6 +536,34 @@ class _SlideMenuState extends State<SlideMenu> {
                 MaterialPageRoute(builder: (context) => Loginpage()),
               );
             },
+          ),
+          Divider(),
+          ExpansionTile(
+            leading: Icon(Icons.settings),
+            title: Text("Settings"),
+            children: [
+              ListTile(
+                leading: Icon(Icons.notifications),
+                title: Text("Notifications"),
+                trailing: Switch(
+                  value: isNotificationEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      isNotificationEnabled = value;
+                     
+                    });
+                  },
+                  activeColor: Color(0xFF2C75FF),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.help_outline),
+                title: Text("FAQs"),
+                onTap: () {
+                 
+                },
+              ),
+            ],
           ),
         ],
       ),

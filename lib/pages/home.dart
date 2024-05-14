@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:reportaroad/pages/BottomNav.dart';
-import 'package:reportaroad/pages/IncidentWarning.dart';
+import 'package:reportaroad/pages/Incidentwarn.dart';
 // import 'package:reportaroad/pages/News.dart';
 import 'package:reportaroad/pages/Report.dart';
 import 'package:reportaroad/pages/UpdatedReport.dart';
@@ -38,6 +38,8 @@ class HomeState extends State<Home> {
   late String userId;
   late String token;
   int reportCount = 0;
+  int potholesFixedCount = 0;
+  
 
   @override
   void initState() {
@@ -55,6 +57,11 @@ class HomeState extends State<Home> {
   void updateReportCount(int count) {
     setState(() {
       reportCount = count;
+    });
+  }
+    void updatePotholesFixedCount(int count) {
+    setState(() {
+      potholesFixedCount = count;
     });
   }
 
@@ -179,6 +186,7 @@ class HomeState extends State<Home> {
         child: SlideMenu(
           userId: userId,
           id: '',
+          email: email
         ),
       ),
       body: _selectedIndex == 0
@@ -246,7 +254,7 @@ class HomeState extends State<Home> {
                               children: [
                                 const SizedBox(height: 5),
                                 Center(
-                                  child: Text("1"),
+                                  child: Text("$potholesFixedCount"),
                                 ),
                               ],
                             ),
@@ -322,7 +330,7 @@ class HomeState extends State<Home> {
                           padding: EdgeInsets.all(16),
                           constraints: BoxConstraints(maxHeight: 300),
                           color: Colors.grey.shade200,
-                          child: IncidentWarning(
+                          child: Incidentwarn(
                             userId: userId,
                             token: token,
                           ),
@@ -348,9 +356,10 @@ class HomeState extends State<Home> {
                 ),
                 UpdatedReport(
                   userId: userId,
-                  token: widget.token,
+                  token: widget.token, 
+                  updatePotholesFixedCount: updatePotholesFixedCount,
                 ),
-                SettingPage(),
+                // SettingPage(),
               ],
             ),
       bottomNavigationBar: BottomNav(

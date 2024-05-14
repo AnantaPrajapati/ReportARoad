@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reportaroad/models/Ambulance.dart';
 import 'package:reportaroad/models/BloodBank.dart';
+import 'package:reportaroad/models/FireBrigade.dart';
 import 'package:reportaroad/models/NearbyHospital.dart';
 import 'package:reportaroad/models/PoliceStation.dart';
 import 'package:reportaroad/utils/ReportSection.dart';
@@ -26,7 +27,6 @@ class _EmergencyNumberState extends State<EmergencyNumber> {
      ["Fire Brigade", "assets/images/Fire.png", true],
     ["Ambulance", "assets/images/Ambulance.png", true],
      ["Police Station", "assets/images/Police.png", true],
-    ["Traffic Violation", "assets/images/emergency.png", true],
   ];
 
 
@@ -119,6 +119,11 @@ class _EmergencyNumberState extends State<EmergencyNumber> {
                       if (myIncidentSection[index][0] == "Police Station") {
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => PoliceStation(),
+                        ));
+                      }
+                       if (myIncidentSection[index][0] == "Fire Brigade") {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => FireBrigade(),
                         ));
                       }
                     },

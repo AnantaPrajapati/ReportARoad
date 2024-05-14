@@ -7,21 +7,21 @@ import 'package:share_plus/share_plus.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ViewReports extends StatefulWidget {
+class Faqs extends StatefulWidget {
   final String userId;
   final token;
 
-  ViewReports({
+  Faqs({
     Key? key,
     required this.userId,
     required this.token,
   }) : super(key: key);
 
   @override
-  _ViewReportsState createState() => _ViewReportsState();
+_FaqsState createState() => _FaqsState();
 }
 
-class _ViewReportsState extends State<ViewReports> {
+class _FaqsState extends State<Faqs> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<dynamic> _report = [];
 

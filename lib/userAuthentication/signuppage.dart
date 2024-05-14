@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:reportaroad/main.dart';
 import 'package:reportaroad/userAuthentication/loginpage.dart';
 import 'package:reportaroad/userAuthentication/verify.dart';
+import 'package:reportaroad/utils/CityDropdown.dart';
 
 class Signuppage extends StatefulWidget {
   const Signuppage({super.key});
@@ -19,45 +20,48 @@ class _SignuppageState extends State<Signuppage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmpasswordController = TextEditingController();
+  TextEditingController cityController = TextEditingController();
 
   bool _isNotValidate = false;
   bool _isSecuredPassword = true;
   bool _isSecuredCPassword = true;
-void signupuser() async {
-  if (fistnameController.text.isNotEmpty &&
-      lastnameController.text.isNotEmpty &&
-      usernameController.text.isNotEmpty &&
-      emailController.text.isNotEmpty &&
-      passwordController.text.isNotEmpty &&
-      confirmpasswordController.text.isNotEmpty) {
-    var regBody = {
-      "firstname": fistnameController.text,
-      "lastname": lastnameController.text,
-      "username": usernameController.text,
-      "email": emailController.text,
-      "password": passwordController.text,
-      "Cpassword": confirmpasswordController.text
-    };
+  void signupuser() async {
+    if (fistnameController.text.isNotEmpty &&
+        lastnameController.text.isNotEmpty &&
+        usernameController.text.isNotEmpty &&
+        emailController.text.isNotEmpty &&
+        passwordController.text.isNotEmpty &&
+        confirmpasswordController.text.isNotEmpty &&
+        cityController.text.isNotEmpty) {
+      var regBody = {
+        "firstname": fistnameController.text,
+        "lastname": lastnameController.text,
+        "username": usernameController.text,
+        "email": emailController.text,
+        "password": passwordController.text,
+        "Cpassword": confirmpasswordController.text,
+        "city": cityController.text
+      };
 
-    var response = await http.post(Uri.parse('${serverBaseUrl}signup'),
-      headers: {"Content-type": "application/json"},
-      body: jsonEncode(regBody),
-    );
+      var response = await http.post(
+        Uri.parse('${serverBaseUrl}signup'),
+        headers: {"Content-type": "application/json"},
+        body: jsonEncode(regBody),
+      );
 
-    if (response.statusCode == 200) {
-      var jsonResponse = jsonDecode(response.body);
-      print(jsonResponse['status']);
-      
-      if (jsonResponse['status']) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Verify(verEmail: emailController.text)),
-        );
-      }
-    } else {
-       
-        var errorMessage =
-            jsonDecode(response.body)['error'];
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        print(jsonResponse['status']);
+
+        if (jsonResponse['status']) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => Verify(verEmail: emailController.text)),
+          );
+        }
+      } else {
+        var errorMessage = jsonDecode(response.body)['error'];
         // ignore: use_build_context_synchronously
         showDialog(
           context: context,
@@ -77,17 +81,18 @@ void signupuser() async {
           },
         );
       }
-  } else {
-    setState(() {
-      _isNotValidate = true;
-    });
+    } else {
+      setState(() {
+        _isNotValidate = true;
+      });
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.white,
+      child: SingleChildScrollView(
       child: Column(
         children: [
           const SizedBox(
@@ -95,8 +100,8 @@ void signupuser() async {
           ),
           Container(
             constraints: const BoxConstraints(
-              maxWidth: 100, // Set the maximum width
-              maxHeight: 800, // Set the maximum height
+              maxWidth: 100, 
+              maxHeight: 800, 
             ),
             child: Image.asset(
               "assets/images/signup.png",
@@ -132,7 +137,7 @@ void signupuser() async {
                     decoration: const InputDecoration(
                       hintText: "First name",
                       border: InputBorder
-                          .none, // Remove the default border of TextFormField
+                          .none, 
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                     ),
                   ),
@@ -151,7 +156,7 @@ void signupuser() async {
                     decoration: const InputDecoration(
                       hintText: "Last name",
                       border: InputBorder
-                          .none, // Remove the default border of TextFormField
+                          .none, 
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                     ),
                   ),
@@ -170,7 +175,7 @@ void signupuser() async {
                     decoration: const InputDecoration(
                       hintText: "Username",
                       border: InputBorder
-                          .none, // Remove the default border of TextFormField
+                          .none, 
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                     ),
                   ),
@@ -189,7 +194,7 @@ void signupuser() async {
                     decoration: const InputDecoration(
                       hintText: "E-mail",
                       border: InputBorder
-                          .none, // Remove the default border of TextFormField
+                          .none,
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                     ),
                   ),
@@ -209,7 +214,7 @@ void signupuser() async {
                     decoration: InputDecoration(
                       hintText: "Create Password",
                       border: InputBorder
-                          .none, // Remove the default border of TextFormField
+                          .none,
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                       suffixIcon: tooglePassword(),
                     ),
@@ -230,11 +235,23 @@ void signupuser() async {
                     decoration: InputDecoration(
                       hintText: "Confirm Password",
                       border: InputBorder
-                          .none, // Remove the default border of TextFormField
+                          .none, 
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                       suffixIcon: toogleCPassword(),
                     ),
                   ),
+                ),
+                const SizedBox(
+                  height: 5.0,
+                ),
+                // Text(
+                //   'City',
+                //   style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                // ),
+                CityDropdown(
+                  onChanged: (newValue) {
+                    cityController.text = newValue;
+                  },
                 ),
                 const SizedBox(
                   height: 15.0,
@@ -247,10 +264,10 @@ void signupuser() async {
                   ),
                   style: ElevatedButton.styleFrom(
                     // ignore: deprecated_member_use
-                    primary: const Color(0xFF2C75FF), // BUTTON COLOR
+                    primary: const Color(0xFF2C75FF),
                     // ignore: deprecated_member_use
-                    onPrimary: Colors.white, // text color
-                    minimumSize: const Size(double.infinity, 50), // button size
+                    onPrimary: Colors.white,
+                    minimumSize: const Size(double.infinity, 50), 
                   ),
                   onPressed: () {
                     signupuser();
@@ -311,6 +328,7 @@ void signupuser() async {
             ),
           ),
         ],
+      ),
       ),
     );
   }

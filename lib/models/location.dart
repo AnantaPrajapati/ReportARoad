@@ -103,23 +103,23 @@ class _UserlocationpageState extends State<Location> {
            
                Column(
                 children: [
-                 IconButton(
-                  icon: Icon(Icons.refresh),
-                  color: Colors.blue,
-                  onPressed: () {
-                      _getCurrentLocation().then((value) {
-                        lat = '${value.latitude}';
-                        long = '${value.longitude}';
+                //  IconButton(
+                //   icon: Icon(Icons.refresh),
+                //   color: Colors.blue,
+                //   onPressed: () {
+                //       _getCurrentLocation().then((value) {
+                //         lat = '${value.latitude}';
+                //         long = '${value.longitude}';
 
-                        // getAddressFromLatLong(value);
+                //         // getAddressFromLatLong(value);
 
-                        setState(() {
-                          locationMessage = 'Latitude: $lat, Longitude: $long';
-                        });
-                        widget.onLocationSelected(lat, long);
-                      });
-                    },
-                  ),
+                //         setState(() {
+                //           locationMessage = 'Latitude: $lat, Longitude: $long';
+                //         });
+                //         widget.onLocationSelected(lat, long);
+                //       });
+                //     },
+                //   ),
                   // const SizedBox(height: 20),
                   //  ElevatedButton(
                   //   // ignore: sort_child_properties_last

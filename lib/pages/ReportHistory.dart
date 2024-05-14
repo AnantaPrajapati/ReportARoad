@@ -1,29 +1,33 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:reportaroad/main.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class ViewReports extends StatefulWidget {
+class ReportHistory extends StatefulWidget {
   final String userId;
-  final token;
+ 
 
-  ViewReports({
+  ReportHistory({
     Key? key,
     required this.userId,
-    required this.token,
   }) : super(key: key);
 
   @override
   _ViewReportsState createState() => _ViewReportsState();
 }
 
-class _ViewReportsState extends State<ViewReports> {
+class _ViewReportsState extends State<ReportHistory> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<dynamic> _report = [];
+  String rating = '';
+  String feedback = '';
+  TextEditingController ratingController = TextEditingController();
+  TextEditingController feedbackController = TextEditingController();
+  bool _isNotValidate = false;
 
   @override
   void initState() {
@@ -31,40 +35,21 @@ class _ViewReportsState extends State<ViewReports> {
     _getReport(widget.userId);
   }
 
-  void _launchMap(String location) async {
-  final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$location');
-  if (await canLaunchUrl(url)) {
-    await launchUrl(url);
-  } else {
-    print('Could not launch $url');
+  void shareReport(String report) async {
+    try {
+      await Share.share(
+        report,
+        subject: 'Share Report',
+      );
+    } catch (e) {
+      print('Error sharing report: $e');
+    }
   }
-}
-
-
-void shareReport(Map<String, dynamic> report) async {
-  try {
- 
-    String severity = report['severity'] ?? 'Unknown';
-    String description = report['desc'] ?? 'No description available';
-    String location = report['location'] ?? 'Unknown location';
-    String image = report['image'] ?? 'No image';
-
-   
-    await Share.share(
-      '$severity: $description: $location: $image',
-      subject: 'Share Report',
-    );
-  } catch (e) {
-    print('Error sharing report: $e');
-  }
-}
-
-
 
   void _getReport(userId) async {
     try {
       var response = await http.get(
-        Uri.parse('${serverBaseUrl}getReport?userId=${widget.userId}'),
+        Uri.parse('${serverBaseUrl}getReportHistory?userId=${widget.userId}'),
         headers: {
           "Content-type": "application/json",
           "Cache-Control": "no-cache"
@@ -72,14 +57,13 @@ void shareReport(Map<String, dynamic> report) async {
       );
 
       var jsonResponse = jsonDecode(response.body);
+       if (jsonResponse['success'] == true) {
+      var newsList = jsonResponse['news'];
+
       setState(() {
-        _report = jsonResponse['success'];
-        _report.forEach((report) {
-          if (report['status'] == null) {
-            report['status'] = 'pending';
-          }
-        });
+       _report = jsonResponse['success'];
       });
+       }
     } catch (e) {
       print('Error fetching reports: $e');
     }
@@ -107,6 +91,91 @@ void shareReport(Map<String, dynamic> report) async {
     }
   }
 
+  void submitRatingAndFeedback(String reportId) async {
+    if (ratingController.text.isNotEmpty &&
+        feedbackController.text.isNotEmpty) {
+      var regBody = {
+        "rating": ratingController.text,
+        "feedback": feedbackController.text,
+      };
+
+      var response = await http.post(
+        Uri.parse(
+            '${serverBaseUrl}ratingFeedback?reportId=$reportId&userId=${widget.userId}'),
+        headers: {"Content-type": "application/json"},
+        body: jsonEncode(regBody),
+      );
+
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['success'] != null && jsonResponse['success']) {
+          ratingController.clear();
+          feedbackController.clear();
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(''),
+                content: Text("Report Submitted successfully"),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          var errorMessage = jsonDecode(response.body)['error'];
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Error'),
+                content: Text(errorMessage),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(
+                        'You have already submitted a rating and feedback for this report'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      } else {
+        var errorMessage = 'An error occurred';
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text(errorMessage),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } else {
+      setState(() {
+        _isNotValidate = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,7 +188,7 @@ void shareReport(Map<String, dynamic> report) async {
             backgroundColor: Color(0xFF2C75FF),
             elevation: 5,
             title: const Text(
-              "Recent Report",
+              "Report History",
               style: TextStyle(
                 color: Colors.white,
               ),
@@ -204,24 +273,27 @@ void shareReport(Map<String, dynamic> report) async {
                                               height: 100,
                                             ),
                                           ),
-                                        ),
-                                      )
+                                        ))
                                     : Icon(Icons.task),
-                                title: Text('Pothole Report',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                        decoration: TextDecoration.underline)),
+                                title: const Text(
+                                  'Your reported incident has been fixed',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     SizedBox(height: 5),
                                     Text(
-                                        'Severity: ${_report[index]['severity']}',
-                                        style: TextStyle(
-                                          fontStyle: FontStyle.normal,
-                                        )),
-                                        SizedBox(height: 3),
+                                      'Severity: ${_report[index]['severity']}',
+                                      style: const TextStyle(
+                                        fontStyle: FontStyle.normal,
+                                      ),
+                                    ),
+                                    SizedBox(height: 5),
                                     Text(
                                         'Location: ${_report[index]['location']}',
                                         maxLines: 2,
@@ -229,39 +301,34 @@ void shareReport(Map<String, dynamic> report) async {
                                         style: TextStyle(
                                           color: Color(0xFF2C75FF),
                                         )),
-                                         SizedBox(height: 3),
+                                    SizedBox(height: 5),
                                     Text(
-                                        'Description: ${_report[index]['desc']}',
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.normal,
-                                          fontSize: 15,
-                                        )),
-                                         SizedBox(height: 3),
-                                    Text(
-                                      'Created At: ${_report[index]['createdAt']}',
-                                      style: TextStyle(
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                     SizedBox(height: 3),
-                                    Text(
-                                      'Status: ${_report[index]['status'] ?? 'pending'}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                      'Description: ${_report[index]['desc']}',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.normal,
                                         fontSize: 15,
-                                        color:
-                                            (_report[index]['status'] == null ||
-                                                    _report[index]['status'] ==
-                                                        'pending')
-                                                ? Colors.orange
-                                                : (_report[index]['status'] ==
-                                                        'approved')
-                                                    ? Colors.green
-                                                    : Colors.red,
                                       ),
                                     ),
+                                    SizedBox(height: 5),
+                                    Text(
+                                      'Updated At: ${_report[index]['updatedAt']}',
+                                      style: TextStyle(
+                                        // fontStyle: FontStyle.italic,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    // Text(
+                                    //   'Status: ${_report[index]['status'] ?? 'resolved'}',
+                                    //   style: TextStyle(
+                                    //     fontWeight: FontWeight.bold,
+                                    //     color: _report[index]['status'] ==
+                                    //             'resolved'
+                                    //         ? Colors.green
+                                    //         : Colors.green,
+                                    //   ),
+                                    // ),
                                   ],
                                 ),
                                 trailing: Row(
@@ -270,12 +337,17 @@ void shareReport(Map<String, dynamic> report) async {
                                     IconButton(
                                       icon: Icon(Icons.share),
                                       onPressed: () {
-                      
-                                             shareReport(_report[index]);
-                                        
+                                        shareReport(
+                                            '${_report[index]['severity']}: ${_report[index]['desc']}');
                                       },
                                     ),
-                                    Icon(Icons.arrow_back),
+                                    IconButton(
+                                      icon: Icon(Icons.rate_review),
+                                      onPressed: () {
+                                        _showRatingAndFeedbackDialog(
+                                            _report[index]['_id']);
+                                      },
+                                    ),
                                   ],
                                 ),
                               ),
@@ -288,6 +360,66 @@ void shareReport(Map<String, dynamic> report) async {
           ),
         ],
       ),
+    );
+  }
+
+  void _showRatingAndFeedbackDialog(String reportId) {
+    int rating = 0;
+    String feedback = '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Theme(
+          data: ThemeData(
+            dialogBackgroundColor: Colors.grey[200],
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                backgroundColor: Color(0xFF2C75FF),
+                primary: Colors.white,
+              ),
+            ),
+          ),
+          child: AlertDialog(
+            title: Text("Rate and Provide Feedback"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextField(
+                  controller: ratingController,
+                  decoration: InputDecoration(labelText: 'Rating (1-5)'),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    rating = int.tryParse(value) ?? 0;
+                  },
+                ),
+                TextField(
+                  controller: feedbackController,
+                  decoration: InputDecoration(labelText: 'Feedback'),
+                  onChanged: (value) {
+                    feedback = value;
+                  },
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text("Submit"),
+                onPressed: () {
+                  submitRatingAndFeedback(reportId);
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text("Cancel"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -350,6 +482,10 @@ void shareReport(Map<String, dynamic> report) async {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Report Details'),
+           backgroundColor: Colors.grey[200], 
+        // shape: RoundedRectangleBorder(
+        //   borderRadius: BorderRadius.circular(8.0), 
+        // ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -371,31 +507,25 @@ void shareReport(Map<String, dynamic> report) async {
                           child: Image.network(
                             reportDetails['images'][index],
                             fit: BoxFit.cover,
-                            width: 80,
-                            height: 80,
+                            width: 100,
+                            height: 100,
                           ),
                         ),
                       ),
                     ),
                   ),
-                SizedBox(height: 10),
+                SizedBox(height: 15),
                 Text('Severity: ${reportDetails['severity']}'),
-                GestureDetector(
-                onTap: () {
-                  _launchMap(reportDetails['location']);
-                },
-                child: Text(
-                  'Location: ${reportDetails['location']}',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-                   SizedBox(height: 5),
+                    SizedBox(height: 10),
+                Text('Location: ${reportDetails['location']}'),
+                 SizedBox(height: 10),
                 Text('Description: ${reportDetails['desc']}'),
-                  SizedBox(height: 5),
-                Text('Status: ${reportDetails['status'] ?? 'pending'}'),
+                 SizedBox(height: 10),
+                Text('Status: ${reportDetails['status'] ?? 'resolved'}'),
+                if (reportDetails['rating'] != null)
+                  Text('Rating: ${reportDetails['rating']}'),
+                if (reportDetails['feedback'] != null)
+                  Text('Feedback: ${reportDetails['feedback']}'),
               ],
             ),
           ),
@@ -404,7 +534,9 @@ void shareReport(Map<String, dynamic> report) async {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Close'),
+              child: Text('Close', style: TextStyle(
+                        color: Color(0xFF2C75FF),
+                        ),  ),
             ),
           ],
         );

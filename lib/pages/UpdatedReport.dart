@@ -5,15 +5,18 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:reportaroad/main.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UpdatedReport extends StatefulWidget {
   final String userId;
   final token;
+ final Function(int) updatePotholesFixedCount;
 
   UpdatedReport({
     Key? key,
     required this.userId,
     required this.token,
+       required this.updatePotholesFixedCount,
   }) : super(key: key);
 
   @override
@@ -28,6 +31,7 @@ class _ViewReportsState extends State<UpdatedReport> {
   TextEditingController ratingController = TextEditingController();
   TextEditingController feedbackController = TextEditingController();
   bool _isNotValidate = false;
+  int potholesFixedCount = 0;
 
   @override
   void initState() {
@@ -45,6 +49,15 @@ class _ViewReportsState extends State<UpdatedReport> {
       print('Error sharing report: $e');
     }
   }
+void _launchMap(String location) async {
+  final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$location');
+  if (await canLaunchUrl(url)) {
+    await launchUrl(url);
+  } else {
+    print('Could not launch $url');
+  }
+}
+
 
   void _getReport(userId) async {
     try {
@@ -59,10 +72,9 @@ class _ViewReportsState extends State<UpdatedReport> {
       var jsonResponse = jsonDecode(response.body);
       setState(() {
         _report = jsonResponse['success'];
+         potholesFixedCount += _report.length;
+       widget.updatePotholesFixedCount(potholesFixedCount); 
         _report.forEach((report) {
-          if (report['status'] == null) {
-            report['status'] = 'pending';
-          }
           if (report['rating'] == null) {
             report['rating'] = 0;
           }
@@ -256,18 +268,19 @@ class _ViewReportsState extends State<UpdatedReport> {
                                 ),
                               ],
                             ),
-                            
                             child: Card(
                               color: Colors.grey[50],
                               elevation: 3,
                               borderOnForeground: false,
                               child: ListTile(
-                                leading: _report[index]['images'] != null && _report[index]['images'].isNotEmpty
-                                ? GestureDetector(
-                                  onTap: () {
-                                    _showReportDetailsDialog(_report[index]);
-                                  },
-                                  child:  Hero(
+                                leading: _report[index]['images'] != null &&
+                                        _report[index]['images'].isNotEmpty
+                                    ? GestureDetector(
+                                        onTap: () {
+                                          _showReportDetailsDialog(
+                                              _report[index]);
+                                        },
+                                        child: Hero(
                                           tag: 'imageHero$index',
                                           child: ClipRRect(
                                             borderRadius:
@@ -279,10 +292,8 @@ class _ViewReportsState extends State<UpdatedReport> {
                                               height: 100,
                                             ),
                                           ),
-                                        )
-                                  
-                                )
-                                  : Icon(Icons.task),
+                                        ))
+                                    : Icon(Icons.task),
                                 title: const Text(
                                   'Your reported incident has been fixed',
                                   style: TextStyle(
@@ -294,23 +305,37 @@ class _ViewReportsState extends State<UpdatedReport> {
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    SizedBox(height: 5),
                                     Text(
                                       'Severity: ${_report[index]['severity']}',
                                       style: const TextStyle(
                                         fontStyle: FontStyle.normal,
                                       ),
                                     ),
+                                    SizedBox(height: 5),
                                     Text(
-                                      'Location: ${_report[index]['location']}',
-                                      style: const TextStyle(
-                                        color: Color(0xFF2C75FF),
-                                      ),
-                                    ),
+                                        'Location: ${_report[index]['location']}',
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Color(0xFF2C75FF),
+                                        )),
+                                    SizedBox(height: 5),
                                     Text(
                                       'Description: ${_report[index]['desc']}',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.normal,
                                         fontSize: 15,
+                                      ),
+                                    ),
+                                    SizedBox(height: 5),
+                                    Text(
+                                      'Updated At: ${_report[index]['updatedAt']}',
+                                      style: TextStyle(
+                                        // fontStyle: FontStyle.italic,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     Text(
@@ -417,113 +442,135 @@ class _ViewReportsState extends State<UpdatedReport> {
     );
   }
 
- void _showImageDialog(BuildContext context, List<String> imageUrls, int index) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return Dialog(
-        child: GestureDetector(
-          onTap: () {
-            Navigator.of(context).pop();
-          },
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            height: MediaQuery.of(context).size.height * 0.6,
-            child: ListView.builder(
-              itemCount: imageUrls.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(color: Colors.grey),
-                    ),
-                    child: DottedBorder(
-                      color: Colors.grey,
-                      strokeWidth: 1,
-                      dashPattern: [4, 4],
-                      child: Image.network(
-                        imageUrls[index],
-                        fit: BoxFit.contain,
-                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          } else {
-                            return Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                        },
+  void _showImageDialog(
+      BuildContext context, List<String> imageUrls, int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+            },
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: ListView.builder(
+                itemCount: imageUrls.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.0),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      child: DottedBorder(
+                        color: Colors.grey,
+                        strokeWidth: 1,
+                        dashPattern: [4, 4],
+                        child: Image.network(
+                          imageUrls[index],
+                          fit: BoxFit.contain,
+                          loadingBuilder: (BuildContext context, Widget child,
+                              ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child;
+                            } else {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
-
-void _showReportDetailsDialog(Map<String, dynamic> reportDetails) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Report Details'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (reportDetails['images'] != null)
-                Wrap(
-                  spacing: 8.0,
-                  runSpacing: 8.0,
-                  children: List.generate(
-                    reportDetails['images'].length,
-                    (index) => GestureDetector(
-                      onTap: () {
-                        _showImageDialog(context, reportDetails['images'], index);
-                      },
-                      child: Hero(
-                        tag: 'imageHero${reportDetails['_id']}_$index',
-                        child: Image.network(
-                          reportDetails['images'][index],
-                          fit: BoxFit.cover,
-                          width: 80,
-                          height: 80,
+  void _showReportDetailsDialog(Map<String, dynamic> reportDetails) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Report Details'),
+           backgroundColor: Colors.grey[200], 
+        // shape: RoundedRectangleBorder(
+        //   borderRadius: BorderRadius.circular(8.0), 
+        // ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (reportDetails['images'] != null)
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: List.generate(
+                      reportDetails['images'].length,
+                      (index) => GestureDetector(
+                        onTap: () {
+                          _showImageDialog(
+                              context, reportDetails['images'], index);
+                        },
+                        child: Hero(
+                          tag: 'imageHero${reportDetails['_id']}_$index',
+                          child: Image.network(
+                            reportDetails['images'][index],
+                            fit: BoxFit.cover,
+                            width: 100,
+                            height: 100,
+                          ),
                         ),
                       ),
                     ),
                   ),
+                SizedBox(height: 15),
+                Text('Severity: ${reportDetails['severity']}'),
+                   SizedBox(height: 10),
+              GestureDetector(
+                onTap: () {
+                  _launchMap(reportDetails['location']);
+                },
+                child: Text(
+                  'Location: ${reportDetails['location']}',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
-              SizedBox(height: 10),
-              Text('Severity: ${reportDetails['severity']}'),
-              Text('Location: ${reportDetails['location']}'),
-              Text('Description: ${reportDetails['desc']}'),
-              Text('Status: ${reportDetails['status'] ?? 'resolved'}'),
-              if (reportDetails['rating'] != null)
-                Text('Rating: ${reportDetails['rating']}'),
-              if (reportDetails['feedback'] != null)
-                Text('Feedback: ${reportDetails['feedback']}'),
-            ],
+              ),
+                 SizedBox(height: 10),
+                Text('Description: ${reportDetails['desc']}'),
+                 SizedBox(height: 10),
+                Text('Status: ${reportDetails['status'] ?? 'resolved'}'),
+                if (reportDetails['rating'] != null)
+                  Text('Rating: ${reportDetails['rating']}'),
+                if (reportDetails['feedback'] != null)
+                  Text('Feedback: ${reportDetails['feedback']}'),
+              ],
+            ),
           ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Close'),
-          ),
-        ],
-      );
-    },
-  );
-}
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close', style: TextStyle(
+                        color: Color(0xFF2C75FF),
+                        ),  ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

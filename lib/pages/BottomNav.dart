@@ -62,12 +62,12 @@ class BottomNav extends StatelessWidget {
                 textStyle: TextStyle(fontSize: 15, color: Colors.white),
               ),
               
-              GButton(
-                icon: Icons.settings,
-                text: 'Settings',
-                    iconSize: 27,
-                textStyle: TextStyle(fontSize: 15, color: Colors.white),
-              ),
+              // GButton(
+              //   icon: Icons.settings,
+              //   text: 'Settings',
+              //       iconSize: 27,
+              //   textStyle: TextStyle(fontSize: 15, color: Colors.white),
+              // ),
             ],
           ),
         ),

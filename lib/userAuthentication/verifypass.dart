@@ -43,9 +43,8 @@ class _VerifyPassState extends State<VerifyPass> {
         );
       }
     } else {
-        // Handle error response from the server
         var errorMessage =
-            jsonDecode(response.body)['error']; // Extract error message
+            jsonDecode(response.body)['error'];
         // ignore: use_build_context_synchronously
         showDialog(
           context: context,
@@ -84,8 +83,8 @@ class _VerifyPassState extends State<VerifyPass> {
           ),
           Container(
             constraints: const BoxConstraints(
-              maxWidth: 200, // Set the maximum width
-              maxHeight: 500, // Set the maximum height
+              maxWidth: 200,
+              maxHeight: 500,
             ),
             child: Image.asset(
               "assets/images/verify.png",
@@ -136,11 +135,11 @@ class _VerifyPassState extends State<VerifyPass> {
                     controller: digitController,
                     keyboardType: TextInputType.number,
                     maxLength: 4,
-                    // obscureText: true, //hides the entered digits
+                   
                     // ignore: unnecessary_const
                     decoration: const InputDecoration(
                       hintText: "Enter 4-digit code",
-                      counterText: "", // To hide the default character count
+                      counterText: "", 
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                     ),
@@ -157,10 +156,10 @@ class _VerifyPassState extends State<VerifyPass> {
                   ),
                   style: ElevatedButton.styleFrom(
                     // ignore: deprecated_member_use
-                    primary: const Color(0xFF2C75FF), // BUTTON COLOR
+                    primary: const Color(0xFF2C75FF),
                     // ignore: deprecated_member_use
                     onPrimary: Colors.white, // text color
-                    minimumSize: const Size(double.infinity, 50), // button size
+                    minimumSize: const Size(double.infinity, 50), 
                   ),
                   onPressed: () {
                     verifyuser();
