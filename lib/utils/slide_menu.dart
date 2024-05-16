@@ -395,30 +395,30 @@ void changePassword() async {
               ),
             ),
           ),
-          Column(
-            children: [
-              Divider(),
-              ListTile(
-                leading: Icon(Icons.upload),
-                title: Text("Upload photo"),
-                onTap: () async {
-                  String? imageUrl = await showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return ImageSelectionFormField(
-                        onImageUploaded: (imageUrl) {},
-                      );
-                    },
-                  );
-                  if (imageUrl != null) {
-                    setState(() {
-                      this.imageUrl = imageUrl;
-                    });
-                  }
-                },
-              ),
-            ],
-          ),
+          // Column(
+          //   children: [
+          //     Divider(),
+          //     ListTile(
+          //       leading: Icon(Icons.upload),
+          //       title: Text("Upload photo"),
+          //       onTap: () async {
+          //         String? imageUrl = await showDialog(
+          //           context: context,
+          //           builder: (BuildContext context) {
+          //             return ImageSelectionFormField(
+          //               onImageUploaded: (imageUrl) {},
+          //             );
+          //           },
+          //         );
+          //         if (imageUrl != null) {
+          //           setState(() {
+          //             this.imageUrl = imageUrl;
+          //           });
+          //         }
+          //       },
+          //     ),
+          //   ],
+          // ),
           Divider(),
           ListTile(
             leading: Icon(Icons.password),

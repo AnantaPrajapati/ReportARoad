@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:reportaroad/pages/BottomNav.dart';
 import 'package:reportaroad/pages/Incidentwarn.dart';
+import 'package:reportaroad/pages/Notification.dart';
+import 'package:reportaroad/pages/NotificationService.dart';
 // import 'package:reportaroad/pages/News.dart';
 import 'package:reportaroad/pages/Report.dart';
 import 'package:reportaroad/pages/UpdatedReport.dart';
@@ -39,7 +41,6 @@ class HomeState extends State<Home> {
   late String token;
   int reportCount = 0;
   int potholesFixedCount = 0;
-  
 
   @override
   void initState() {
@@ -59,7 +60,8 @@ class HomeState extends State<Home> {
       reportCount = count;
     });
   }
-    void updatePotholesFixedCount(int count) {
+
+  void updatePotholesFixedCount(int count) {
     setState(() {
       potholesFixedCount = count;
     });
@@ -166,7 +168,13 @@ class HomeState extends State<Home> {
                   ),
                   actions: [
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => NotificationPage(userId: userId, notificationService: NotificationService())),
+                        );
+                      },
                       icon: Icon(
                         Icons.notifications,
                         color: Colors.white,
@@ -183,11 +191,7 @@ class HomeState extends State<Home> {
       drawer: Container(
         width: MediaQuery.of(context).size.width * 0.7,
         color: Colors.white,
-        child: SlideMenu(
-          userId: userId,
-          id: '',
-          email: email
-        ),
+        child: SlideMenu(userId: userId, id: '', email: email),
       ),
       body: _selectedIndex == 0
           ? SingleChildScrollView(
@@ -344,7 +348,10 @@ class HomeState extends State<Home> {
           : IndexedStack(
               index: _selectedIndex - 1,
               children: [
-                News(userId: userId, token: token,),
+                News(
+                  userId: userId,
+                  token: token,
+                ),
                 Report(
                   userId: userId,
                   token: widget.token,
@@ -356,7 +363,7 @@ class HomeState extends State<Home> {
                 ),
                 UpdatedReport(
                   userId: userId,
-                  token: widget.token, 
+                  token: widget.token,
                   updatePotholesFixedCount: updatePotholesFixedCount,
                 ),
                 // SettingPage(),

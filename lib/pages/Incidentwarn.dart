@@ -49,14 +49,16 @@ class _IncidentWarningState extends State<Incidentwarn> {
       print('Error sharing report: $e');
     }
   }
+
   void _launchMap(String location) async {
-  final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$location');
-  if (await canLaunchUrl(url)) {
-    await launchUrl(url);
-  } else {
-    print('Could not launch $url');
+    final url =
+        Uri.parse('https://www.google.com/maps/search/?api=1&query=$location');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      print('Could not launch $url');
+    }
   }
-}
 
   void deleteReport(id) async {
     try {
@@ -173,8 +175,8 @@ class _IncidentWarningState extends State<Incidentwarn> {
                                     leading: _report[index]['image'] != null
                                         ? GestureDetector(
                                             onTap: () {
-                                            _showReportDetailsDialog(
-                                              _report[index]);
+                                              _showReportDetailsDialog(
+                                                  _report[index]);
                                             },
                                             child: Hero(
                                               tag: 'imageHero$index',
@@ -191,19 +193,28 @@ class _IncidentWarningState extends State<Incidentwarn> {
                                             ),
                                           )
                                         : Icon(Icons.task),
-                                    title: Text(
-                                      '${_report[index]['title']}',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                    title: Expanded(
+                                      child: Text(
+                                        '${_report[index]['title']}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.only(top: 4.0),
-                                      child: Text(
-                                        '${_report[index]['desc']}',
-                                        style: TextStyle(
-                                          fontSize: 14,
+                                    subtitle: Flexible(
+                                      child: Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 4.0),
+                                        child: Text(
+                                          '${_report[index]['desc']}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                          ),
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ),
@@ -214,7 +225,8 @@ class _IncidentWarningState extends State<Incidentwarn> {
                                           icon: Icon(Icons.share),
                                           onPressed: () {
                                             shareReport(
-                                                '${_report[index]['title']}: ${_report[index]['desc']}');
+                                              '${_report[index]['title']}: ${_report[index]['desc']}',
+                                            );
                                           },
                                         ),
                                         Icon(Icons.arrow_back),
@@ -234,9 +246,8 @@ class _IncidentWarningState extends State<Incidentwarn> {
       ),
     );
   }
-  
-  void _showImageDialog(
-      BuildContext context, List<String> imageUrls, int index) {
+
+  void _showImageDialog(BuildContext context, List<String> imageUrls) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -288,76 +299,75 @@ class _IncidentWarningState extends State<Incidentwarn> {
     );
   }
 
-void _showReportDetailsDialog(Map<String, dynamic> reportDetails) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Report Details'),
-        backgroundColor: Colors.grey[200],
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (reportDetails['images'] != null)
-                Wrap(
-                  spacing: 8.0,
-                  runSpacing: 8.0,
-                  children: List.generate(
-                    reportDetails['images'].length,
-                    (index) => GestureDetector(
-                      onTap: () {
-                        _showImageDialog(
-                            context, reportDetails['images'], index);
-                      },
-                      child: Hero(
-                        tag: 'imageHero_${reportDetails['_id']}_$index',
-                        child: Image.network(
-                          reportDetails['images'][index],
-                          fit: BoxFit.cover,
-                          width: 100,
-                          height: 100,
-                        ),
+  void _showReportDetailsDialog(Map<String, dynamic> reportDetails) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Report Details'),
+          backgroundColor: Colors.grey[200],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (reportDetails['image'] != null &&
+                    reportDetails['image'].isNotEmpty)
+                  GestureDetector(
+                    onTap: () {
+                      _showImageDialog(context, reportDetails['image']);
+                    },
+                    child: Hero(
+                      tag: 'imageHero_${reportDetails['_id']}',
+                      child: Image.network(
+                        reportDetails['image'],
+                        fit: BoxFit.cover,
+                        width: 200,
+                        height: 200,
                       ),
                     ),
                   ),
-                ),
-              SizedBox(height: 15),
-              GestureDetector(
-                onTap: () {
-                  _launchMap(reportDetails['location']);
-                },
-                child: Text(
-                  'Location: ${reportDetails['location']}',
+                SizedBox(height: 15),
+                Text(
+                  '${reportDetails['title']}',
                   style: TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-              SizedBox(height: 10),
-              Text('Description: ${reportDetails['desc']}'),
-              SizedBox(height: 10),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(
-              'Close',
-              style: TextStyle(
-                color: Color(0xFF2C75FF),
-              ),
+                GestureDetector(
+                  onTap: () {
+                    _launchMap(reportDetails['location']);
+                  },
+                  child: Text(
+                    'Location: ${reportDetails['location']}',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text('Description: ${reportDetails['desc']}'),
+                SizedBox(height: 10),
+              ],
             ),
           ),
-        ],
-      );
-    },
-  );
-}
-
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'Close',
+                style: TextStyle(
+                  color: Color(0xFF2C75FF),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
