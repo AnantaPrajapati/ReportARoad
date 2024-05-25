@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:reportaroad/main.dart';
+import 'package:reportaroad/pages/NotificationService.dart';
+import 'package:reportaroad/pages/PushNotification.dart';
 import 'package:reportaroad/utils/TitleDropdown.dart';
 import 'package:reportaroad/utils/userlocation.dart';
 import '../utils/ImageSelection.dart';
@@ -20,8 +22,10 @@ class IncidentReport extends StatefulWidget {
 
 class _ReportState extends State<IncidentReport> {
    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+   final NotificationService service = NotificationService();
   final locationController = TextEditingController();
   final titleController = TextEditingController();
+   final timeController = TextEditingController();
   final descController = TextEditingController();
   String? imageUrl;
   bool _isNotValidate = false;
@@ -47,6 +51,7 @@ void save() async {
       "location": locationController.text,
       "title": titleController.text,
       "desc": descController.text,
+        "time": timeController.text,
       "image": imageUrl!,
       };
 
@@ -58,49 +63,65 @@ void save() async {
         locationController.clear();
         titleController.clear();
         descController.clear();
+        timeController.clear();
         var jsonResponse = jsonDecode(response.body);
         print(jsonResponse['status']);
-
-          if (response.statusCode == 200) {
-        var jsonResponse = jsonDecode(response.body);
-        if (jsonResponse['success'] != null && jsonResponse['success']) {
-          // Navigate to the verification page
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => VerifyPass(verEmail: emailController.text),
-          //   ),
-          // );
-        }
-      } 
-      } else {
-        var errorMessage =
-            jsonDecode(response.body)['error']; 
-        // ignore: use_build_context_synchronously
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Error'),
-              content: Text(errorMessage),
+              title: Text('Report Submitted successfully'),
+              content: Text("Report Submitted successfully"),
               actions: <Widget>[
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('OK'),
+                  child: Text('OK'),
                 ),
               ],
             );
           },
         );
-      }
+
+      //     if (response.statusCode == 200) {
+      //   var jsonResponse = jsonDecode(response.body);
+      //   if (jsonResponse['success'] != null && jsonResponse['success']) {
+      //     // Navigate to the verification page
+      //     // Navigator.push(
+      //     //   context,
+      //     //   MaterialPageRoute(
+      //     //     builder: (context) => VerifyPass(verEmail: emailController.text),
+      //     //   ),
+      //     // );
+      //   }
+      // } 
     } else {
-      setState(() {
-        _isNotValidate = true;
-      });
+      var errorMessage = jsonDecode(response.body)['error'];
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content: Text(errorMessage),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     }
+  } else {
+    setState(() {
+      _isNotValidate = true;
+    });
   }
+}
 
 
   @override
@@ -115,7 +136,7 @@ void save() async {
             backgroundColor: Color(0xFF2C75FF),
             elevation: 5,
             title: const Text(
-              "Report",
+              "Incident Report",
               style: TextStyle(
                 color: Colors.white,
               ),
@@ -188,6 +209,19 @@ void save() async {
                             ),
                           ),
                           SizedBox(height: 20.0),
+                          const Text(
+                            'Time',
+                            style: TextStyle(
+                                fontSize: 18.0, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 10.0),
+                          TextFormField(
+                            controller: timeController,
+                            decoration: InputDecoration(
+                              hintText: 'Enter the time',
+                            ),
+                          ),
+                          SizedBox(height: 20.0),
                           Text(
                             'Description',
                             style: TextStyle(
@@ -214,8 +248,17 @@ void save() async {
                           
                           SizedBox(height: 20.0),
                           ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               save();
+                                 service.createNotification(widget.userId,
+                                  "Your Report for incident is submitted", "", false);
+                              await LocalNotifications.init();
+                              LocalNotifications.showSimpleNotification(
+                                title: 'Your report is submitted',
+                                body:
+                                    'Your Report for incident is submitted',
+                                payload: 'Payload from Another Page',
+                              );
                             },
                             child: const Text(
                               "Submit",

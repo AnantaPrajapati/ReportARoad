@@ -1,10 +1,9 @@
- import 'dart:convert';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:reportaroad/main.dart';
 
-
 class Notification {
-  final int id;
+  final String id;
   final String userId;
   final String message;
   final DateTime timestamp;
@@ -23,25 +22,19 @@ class Notification {
   factory Notification.fromJson(Map<String, dynamic> json) {
     print("from json reu");
     return Notification(
-      id: json['id'] as int,
-      userId: json['userId'],
-      message: json['message'],
-      timestamp: DateTime.parse(json['timestamp']), 
-      isRead: json['read'], 
-
-      actionType: json['actionType'],
+       id: json['_id'] != null ? json['_id'].toString() : '',
+      userId: json['userId'] ?? '',
+      message: json['message'] ?? '',
+      timestamp: json['timestamp'] != null ? DateTime.parse(json['timestamp']) : DateTime.now(),
+      isRead: json['isRead'] ?? false,
+      actionType: json['actionType'] ?? '',
     );
   }
 }
+
 class NotificationService {
-
-
   Future<Notification> createNotification(
-      String userId,
-      String message,
-      String actionType,
-      bool isRead
-      ) async {
+      String userId, String message, String actionType, bool isRead) async {
     final response = await http.post(
       Uri.parse('${serverBaseUrl}createNotification'),
       headers: {
@@ -51,12 +44,12 @@ class NotificationService {
         'userId': userId,
         'message': message,
         'actionType': actionType,
-        'isRead':isRead
+        'isRead': isRead
       }),
     );
 
     if (response.statusCode == 200) {
-      await getNotificationCount(email);
+      // await getNotificationCount(userId);
       return Notification.fromJson(jsonDecode(response.body));
     } else {
       throw Exception("Failed to create notification");
@@ -64,65 +57,72 @@ class NotificationService {
   }
 
   Future<List<Notification>> getNotifications(String userId) async {
-
     print(userId);
     final response = await http.get(
-      Uri.parse('${serverBaseUrl}notifications/user/?userId=$userId'),
+      Uri.parse('${serverBaseUrl}getNotifications?userId=${userId}'),
       headers: {
-        'Content-Type': 'application/json',
+        "Content-type": "application/json",
+        "Cache-Control": "no-cache"
       },
     );
+    print(response.body);
 
     if (response.statusCode == 200) {
-      await getNotificationCount(email);
+      // await getNotificationCount(userId);
       print(response.body);
       List<dynamic> data = jsonDecode(response.body);
       return data.map((item) => Notification.fromJson(item)).toList();
     } else {
-      print("responseBody is ");
-      print(response.body);
+      // print("responseBody is ");
+      // print(response.body);
       throw Exception("Failed to fetch notifications");
     }
   }
 
-  Future<void> markAsRead(int notificationId) async {
+  Future<void> markAsRead(String notificationId) async {
     final response = await http.put(
-      Uri.parse('${serverBaseUrl}notifications/mark-as-read/?notificationId=$notificationId'),
+      Uri.parse(
+          '${serverBaseUrl}markAsRead?notificationId=${notificationId}'),
       headers: {
         'Content-Type': 'application/json',
+        "Cache-Control": "no-cache"
       },
     );
-
+  print('Response status: ${response.statusCode}');
+  print('Response body: ${response.body}');
     if (response.statusCode != 200) {
-      await getNotificationCount(email);
+      // await getNotificationCount(userId);
       throw Exception("Failed to mark notification as read");
     }
   }
- 
-  Future<void> deleteNotification(int notificationId) async {
-    final response = await http.delete(
-      Uri.parse('${serverBaseUrl}notifications/delete?notificationId=$notificationId'),
+
+  Future<void> deleteNotification(String notificationId) async {
+    final response = await http.post(
+      Uri.parse(
+          '${serverBaseUrl}deleteNotification?notificationId=${notificationId}'),
       headers: {
         'Content-Type': 'application/json',
+            "Cache-Control": "no-cache"
       },
     );
 
     if (response.statusCode != 200) {
-      await getNotificationCount(email);
+      // await getNotificationCount(userId);
       throw Exception("Failed to delete notification");
     }
   }
-
 }
-Future<void> getNotificationCount(String userId) async {
-  var notificationCount=0;
-  final url = Uri.parse('${serverBaseUrl}notifications/user/count?userId=$userId');
-  final response = await http.get(url);
 
-  if (response.statusCode == 200) {
-    final int count = int.parse(response.body);
-    notificationCount=count;
-  } else {
-    throw Exception('Failed to load notification count');
-  }
-}
+// Future<void> getNotificationCount(String userId) async {
+//   var notificationCount = 0;
+//   final url =
+//       Uri.parse('${serverBaseUrl}notifications/user/count?userId=$userId');
+//   final response = await http.get(url);
+
+//   if (response.statusCode == 200) {
+//     final int count = int.parse(response.body);
+//     notificationCount = count;
+//   } else {
+//     throw Exception('Failed to load notification count');
+//   }
+// }

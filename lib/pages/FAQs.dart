@@ -1,112 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:reportaroad/main.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:dotted_border/dotted_border.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class Faqs extends StatefulWidget {
-  final String userId;
-  final token;
-
-  Faqs({
-    Key? key,
-    required this.userId,
-    required this.token,
-  }) : super(key: key);
-
-  @override
-_FaqsState createState() => _FaqsState();
-}
-
-class _FaqsState extends State<Faqs> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  List<dynamic> _report = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _getReport(widget.userId);
-  }
-
-  void _launchMap(String location) async {
-  final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$location');
-  if (await canLaunchUrl(url)) {
-    await launchUrl(url);
-  } else {
-    print('Could not launch $url');
-  }
-}
-
-
-void shareReport(Map<String, dynamic> report) async {
-  try {
- 
-    String severity = report['severity'] ?? 'Unknown';
-    String description = report['desc'] ?? 'No description available';
-    String location = report['location'] ?? 'Unknown location';
-    String image = report['image'] ?? 'No image';
-
-   
-    await Share.share(
-      '$severity: $description: $location: $image',
-      subject: 'Share Report',
-    );
-  } catch (e) {
-    print('Error sharing report: $e');
-  }
-}
-
-
-
-  void _getReport(userId) async {
-    try {
-      var response = await http.get(
-        Uri.parse('${serverBaseUrl}getReport?userId=${widget.userId}'),
-        headers: {
-          "Content-type": "application/json",
-          "Cache-Control": "no-cache"
-        },
-      );
-
-      var jsonResponse = jsonDecode(response.body);
-      setState(() {
-        _report = jsonResponse['success'];
-        _report.forEach((report) {
-          if (report['status'] == null) {
-            report['status'] = 'pending';
-          }
-        });
-      });
-    } catch (e) {
-      print('Error fetching reports: $e');
-    }
-  }
-
-  void deleteReport(id) async {
-    try {
-      print('Deleting report with ID: $id');
-      var regBody = {
-        "id": id,
-      };
-      var response = await http.post(
-        Uri.parse('${serverBaseUrl}deleteReport'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(regBody),
-      );
-      var jsonResponse = jsonDecode(response.body);
-      if (jsonResponse['status']) {
-        setState(() {
-          _report.removeWhere((report) => report['_id'] == id);
-        });
-      }
-    } catch (e) {
-      print('Error deleting report: $e');
-    }
-  }
-
+class Faqs extends StatelessWidget {
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,287 +23,64 @@ void shareReport(Map<String, dynamic> report) async {
           ),
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: ListView(
         children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.refresh),
-                  color: Colors.blue,
-                  onPressed: () {
-                    _getReport(widget.userId);
-                  },
-                ),
-              ],
-            ),
+          _buildFaqItem(
+            question: ' What is the Pothole Reporting System?',
+            answer:
+                'A1: The Pothole Reporting System is an application that allows users to report potholes and other road issues directly to the local government. Users can upload images, provide descriptions, and pinpoint the location of the pothole on a map. The government can then review these reports, approve or disapprove them, and take necessary actions.',
           ),
-          Expanded(
-            child: Container(
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: _report.isEmpty
-                    ? Center(child: Text('No reports available'))
-                    : ListView.builder(
-                        itemCount: _report.length,
-                        itemBuilder: (context, int index) {
-                          return Slidable(
-                            key: Key(_report[index]['_id']),
-                            endActionPane: ActionPane(
-                              motion: const ScrollMotion(),
-                              dismissible: DismissiblePane(
-                                onDismissed: () {
-                                  String reportId = _report[index]['_id'];
-                                  if (_report.isNotEmpty) {
-                                    deleteReport(reportId);
-                                  }
-                                },
-                              ),
-                              children: [
-                                SlidableAction(
-                                  backgroundColor: Color(0xFFFE4A49),
-                                  foregroundColor: Colors.white,
-                                  icon: Icons.delete,
-                                  label: 'Delete',
-                                  onPressed: (BuildContext context) {
-                                    print('${_report[index]['_id']}');
-                                  },
-                                ),
-                              ],
-                            ),
-                            child: Card(
-                              color: Colors.grey[50],
-                              elevation: 3,
-                              borderOnForeground: false,
-                              child: ListTile(
-                                leading: _report[index]['images'] != null &&
-                                        _report[index]['images'].isNotEmpty
-                                    ? GestureDetector(
-                                        onTap: () {
-                                          _showReportDetailsDialog(
-                                              _report[index]);
-                                        },
-                                        child: Hero(
-                                          tag: 'imageHero$index',
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            child: Image.network(
-                                              _report[index]['images'][0],
-                                              fit: BoxFit.cover,
-                                              width: 100,
-                                              height: 100,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    : Icon(Icons.task),
-                                title: Text('Pothole Report',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                        decoration: TextDecoration.underline)),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(height: 5),
-                                    Text(
-                                        'Severity: ${_report[index]['severity']}',
-                                        style: TextStyle(
-                                          fontStyle: FontStyle.normal,
-                                        )),
-                                        SizedBox(height: 3),
-                                    Text(
-                                        'Location: ${_report[index]['location']}',
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: Color(0xFF2C75FF),
-                                        )),
-                                         SizedBox(height: 3),
-                                    Text(
-                                        'Description: ${_report[index]['desc']}',
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.normal,
-                                          fontSize: 15,
-                                        )),
-                                         SizedBox(height: 3),
-                                    Text(
-                                      'Created At: ${_report[index]['createdAt']}',
-                                      style: TextStyle(
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                     SizedBox(height: 3),
-                                    Text(
-                                      'Status: ${_report[index]['status'] ?? 'pending'}',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                        color:
-                                            (_report[index]['status'] == null ||
-                                                    _report[index]['status'] ==
-                                                        'pending')
-                                                ? Colors.orange
-                                                : (_report[index]['status'] ==
-                                                        'approved')
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.share),
-                                      onPressed: () {
-                      
-                                             shareReport(_report[index]);
-                                        
-                                      },
-                                    ),
-                                    Icon(Icons.arrow_back),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-            ),
+          _buildFaqItem(
+            question: 'How do I report a pothole using the app?',
+            answer:
+                'A2: To report a pothole, open the app and navigate to the "Report Pothole" section. Fill in the required fields including location, title, description, and upload an image of the pothole. Once all fields are completed, submit the report.',
+          ),
+          _buildFaqItem(
+            question: 'How can I view the status of my reported pothole?',
+            answer: 'You can view the status of your report in the "Recent Reports" section. Each report will have a status indicator showing whether it is pending, approved, or disapproved.',
+          ),
+          _buildFaqItem(
+            question: 'How does the government respond to reported potholes?',
+            answer: 'The government reviews each submitted report, adds comments if necessary, and changes the status of the report to approved or disapproved. Approved reports will be scheduled for repair, while disapproved reports will include a reason for disapproval.',
+          ),
+          _buildFaqItem(
+            question: 'Can I delete a report I submitted?',
+            answer: 'Yes, you can delete a report if it has not yet been reviewed by the government. Go to the "Recent Reports" section, select the report, and choose the delete option.',
+          ),
+          _buildFaqItem(
+            question: 'How do I share a report with others?',
+            answer: 'To share a report, navigate to the "Recent Reports" section, select the report you want to share, and choose the share option. You can share the report through various platforms like email, social media, or messaging apps.',
+          ),
+          _buildFaqItem(
+            question: ' What kind of notifications will I receive from the app?',
+            answer: 'You will receive notifications for various activities such as when you register, submit a report, when your report is approved or disapproved, and when there are updates or comments on your report.',
+          ),
+
+          _buildFaqItem(
+            question: ' How can I view incident reports submitted by other users?',
+            answer: 'You can view incident reports submitted by other users in the "Incident Reports" section. This section displays a list of all reported incidents with details and images.',
+          ),
+          _buildFaqItem(
+            question: 'Can the government post news and updates on the app?',
+            answer: ' Yes, the government can post news and updates related to road maintenance and other public information. These updates will be visible in the "News" section of the app.',
           ),
         ],
       ),
     );
   }
 
-  void _showImageDialog(
-      BuildContext context, List<String> imageUrls, int index) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: GestureDetector(
-            onTap: () {
-              Navigator.of(context).pop();
-            },
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8,
-              height: MediaQuery.of(context).size.height * 0.6,
-              child: ListView.builder(
-                itemCount: imageUrls.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        border: Border.all(color: Colors.grey),
-                      ),
-                      child: DottedBorder(
-                        color: Colors.grey,
-                        strokeWidth: 1,
-                        dashPattern: [4, 4],
-                        child: Image.network(
-                          imageUrls[index],
-                          fit: BoxFit.contain,
-                          loadingBuilder: (BuildContext context, Widget child,
-                              ImageChunkEvent? loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child;
-                            } else {
-                              return Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+  Widget _buildFaqItem({required String question, required String answer}) {
+    return Card(
+      margin: EdgeInsets.all(8.0),
+      child: ExpansionTile(
+        title: Text(question),
+        children: [
+          Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(answer),
           ),
-        );
-      },
-    );
-  }
-
-  void _showReportDetailsDialog(Map<String, dynamic> reportDetails) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Report Details'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (reportDetails['images'] != null)
-                  Wrap(
-                    spacing: 8.0,
-                    runSpacing: 8.0,
-                    children: List.generate(
-                      reportDetails['images'].length,
-                      (index) => GestureDetector(
-                        onTap: () {
-                          _showImageDialog(
-                              context, reportDetails['images'], index);
-                        },
-                        child: Hero(
-                          tag: 'imageHero${reportDetails['_id']}_$index',
-                          child: Image.network(
-                            reportDetails['images'][index],
-                            fit: BoxFit.cover,
-                            width: 80,
-                            height: 80,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                SizedBox(height: 10),
-                Text('Severity: ${reportDetails['severity']}'),
-                GestureDetector(
-                onTap: () {
-                  _launchMap(reportDetails['location']);
-                },
-                child: Text(
-                  'Location: ${reportDetails['location']}',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-                   SizedBox(height: 5),
-                Text('Description: ${reportDetails['desc']}'),
-                  SizedBox(height: 5),
-                Text('Status: ${reportDetails['status'] ?? 'pending'}'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Close'),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
   }
 }

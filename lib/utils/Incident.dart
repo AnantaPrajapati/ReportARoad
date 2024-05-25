@@ -106,7 +106,7 @@ class _ReportIncidentState extends State<ReportIncident> {
                     },
                     child: ReportSection(
                       ReportSectionName: myIncidentSection[index][0],
-                      iconPath: myIncidentSection[index][1],
+                      iconPath: myIncidentSection[index][1], heroTag: '',
                     ),
                   );
                 },

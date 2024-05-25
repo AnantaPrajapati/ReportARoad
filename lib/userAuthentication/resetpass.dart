@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:reportaroad/main.dart';
+import 'package:reportaroad/pages/NotificationService.dart';
+import 'package:reportaroad/pages/PushNotification.dart';
 import 'package:reportaroad/userAuthentication/loginpage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,8 +21,10 @@ class _ResetPassState extends State<ResetPass> {
   
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmpasswordController = TextEditingController();
+  final NotificationService service = NotificationService();
   bool _isNotValidate = false;
   bool _isSecuredPassword = true;
+   bool _isSecuredCPassword = true;
   
   void resetpass() async {
     if ( passwordController.text.isNotEmpty &&
@@ -39,18 +43,31 @@ class _ResetPassState extends State<ResetPass> {
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
       print(jsonResponse['status']);
-      
-    if (jsonResponse['status'] != null && jsonResponse['status']) {
-      print('Password reset successfully.');
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Loginpage()),
-        );
-      }
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('successful'),
+            content: Text("Password changed successfully"),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Loginpage()),
+                  );
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
       } else {
-        // Handle error response from the server
+  
         var errorMessage =
-            jsonDecode(response.body)['error']; // Extract error message
+            jsonDecode(response.body)['error']; 
         // ignore: use_build_context_synchronously
         showDialog(
           context: context,
@@ -88,8 +105,8 @@ class _ResetPassState extends State<ResetPass> {
           ),
           Container(
             constraints: const BoxConstraints(
-              maxWidth: 200, // Set the maximum width
-              maxHeight: 200, // Set the maximum height
+              maxWidth: 200, 
+              maxHeight: 200, 
             ),
             child: Image.asset(
               "assets/images/login.png",
@@ -125,8 +142,9 @@ class _ResetPassState extends State<ResetPass> {
                     decoration: const InputDecoration(
                       hintText: "Create Password",
                       border: InputBorder
-                          .none, // Remove the default border of TextFormField
+                          .none, 
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                      // suffixIcon: toogleCPassword(),                   
                     ),
                   ),
                 ),
@@ -146,7 +164,7 @@ class _ResetPassState extends State<ResetPass> {
                       hintText: "Confirm Password",
                       // labelText: "Password",
                       border: InputBorder
-                          .none, // Remove the default border of TextFormField
+                          .none, 
                       contentPadding:
                           const EdgeInsets.symmetric(vertical: 20.0),
                       suffixIcon: tooglePassword(),
@@ -165,13 +183,22 @@ class _ResetPassState extends State<ResetPass> {
                   ),
                   style: ElevatedButton.styleFrom(
                     // ignore: deprecated_member_use
-                    primary: const Color(0xFF2C75FF), // BUTTON COLOR
+                    primary: const Color(0xFF2C75FF),
                     // ignore: deprecated_member_use
                     onPrimary: Colors.white, // text color
-                    minimumSize: const Size(double.infinity, 50), // button size
+                    minimumSize: const Size(double.infinity, 50),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     resetpass();
+                    service.createNotification(widget.verEmail,
+                        "Your Password is recently changed", "", false);
+                    await LocalNotifications.init();
+                    LocalNotifications.showSimpleNotification(
+                      title: 'Your Password is recently changed',
+                      body:
+                      'Please check your account',
+                      payload: 'Payload from Another Page',
+                    );
                   },
                 ),
               ],
@@ -190,6 +217,18 @@ class _ResetPassState extends State<ResetPass> {
           });
         },
         icon: _isSecuredPassword
+            ? const Icon(Icons.visibility)
+            : const Icon(Icons.visibility_off),
+        color: Colors.grey);
+  }
+   Widget toogleCPassword() {
+    return IconButton(
+        onPressed: () {
+          setState(() {
+            _isSecuredCPassword = !_isSecuredCPassword;
+          });
+        },
+        icon: _isSecuredCPassword
             ? const Icon(Icons.visibility)
             : const Icon(Icons.visibility_off),
         color: Colors.grey);

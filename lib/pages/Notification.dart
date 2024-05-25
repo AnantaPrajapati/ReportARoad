@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reportaroad/pages/NotificationService.dart' as customNotification;
 
-
 class NotificationPage extends StatefulWidget {
   final String userId;
   final customNotification.NotificationService notificationService;
@@ -26,7 +25,7 @@ class _NotificationPageState extends State<NotificationPage> {
     _notificationsFuture = widget.notificationService.getNotifications(widget.userId);
   }
 
-  Future<void> markAsRead(int notificationId) async {
+  Future<void> markAsRead(String notificationId) async {
     try {
       await widget.notificationService.markAsRead(notificationId);
       setState(() {
@@ -39,7 +38,7 @@ class _NotificationPageState extends State<NotificationPage> {
     }
   }
 
-  Future<void> deleteNotification(int notificationId) async {
+  Future<void> deleteNotification(String notificationId) async {
     try {
       await widget.notificationService.deleteNotification(notificationId);
       setState(() {
@@ -51,59 +50,72 @@ class _NotificationPageState extends State<NotificationPage> {
       );
     }
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-       key: _scaffoldKey,
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight + 10),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 0),
-          child: AppBar(
-            backgroundColor: Color(0xFF2C75FF),
-            elevation: 5,
-            title: const Text(
-              "Notifications",
-              style: TextStyle(
-                color: Colors.white,
-              ),
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    key: _scaffoldKey,
+    appBar: PreferredSize(
+      preferredSize: Size.fromHeight(kToolbarHeight + 10),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 0),
+        child: AppBar(
+          backgroundColor: Color(0xFF2C75FF),
+          elevation: 5,
+          title: const Text(
+            "Notifications",
+            style: TextStyle(
+              color: Colors.white,
             ),
-            centerTitle: true,
           ),
+          centerTitle: true,
         ),
       ),
-      body: FutureBuilder<List<customNotification.Notification>>(
-        future: _notificationsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text("Error fetching notifications"));
-          }
-          final notifications = snapshot.data ?? [];
-          if (notifications.isEmpty) {
-            return Center(child: Text("No notifications available"));
-          }
-          return ListView.builder(
-            itemCount: notifications.length,
-            itemBuilder: (context, index) {
-              final notification = notifications[index];
-              final isRead = notification.isRead;
-              final bgColor = isRead ? Colors.white : Colors.white70;
-              return Column(
-                children: [
-                  SizedBox(height: 5,),
-                  Padding(
+    ),
+    body: FutureBuilder<List<customNotification.Notification>>(
+      future: _notificationsFuture,
+      builder: (context, snapshot) {
+        print("FutureBuilder state: ${snapshot.connectionState}");
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          print("Error: ${snapshot.error}");
+          return Center(child: Text("Error fetching notifications"));
+        }
+
+        final notifications = snapshot.data ?? [];
+        notifications.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        if (notifications.isEmpty) {
+          return Center(child: Text("No notifications available"));
+        }
+
+        return Column(
+          children: [
+            // IconButton(
+            //   icon: Icon(Icons.refresh),
+            //   color: Colors.blue,
+            //   onPressed: () {
+            //     setState(() {
+            //       _notificationsFuture = widget.notificationService.getNotifications(widget.userId);
+            //     });
+            //   },
+            // ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: notifications.length,
+                itemBuilder: (context, index) {
+                  final notification = notifications[index];
+                  final isRead = notification.isRead;
+                  final bgColor = isRead ? Colors.grey[200] : Colors.lightBlue[100];
+                  return Padding(
                     padding: EdgeInsets.symmetric(horizontal: 8.0),
                     child: Dismissible(
                       key: Key(notification.id.toString()),
-                      direction: DismissDirection.startToEnd,
+                      direction: DismissDirection.endToStart,
                       background: Container(
                         color: Colors.red,
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: 16.0),
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 16.0),
                         child: Icon(Icons.delete, color: Colors.white),
                       ),
                       onDismissed: (_) => deleteNotification(notification.id),
@@ -123,13 +135,14 @@ class _NotificationPageState extends State<NotificationPage> {
                         ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
 }

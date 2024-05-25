@@ -74,7 +74,7 @@ class _EmergencyNumberState extends State<EmergencyNumber> {
                     const Expanded(
                       child: Center(
                         child: Text(
-                          "Emergency Number",
+                          "Emergency Location",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,

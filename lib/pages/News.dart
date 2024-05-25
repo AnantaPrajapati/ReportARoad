@@ -54,9 +54,10 @@ class _NewsState extends State<News> {
       );
 
       var jsonResponse = jsonDecode(response.body);
+      
       if (jsonResponse['success'] == true) {
-      var newsList = jsonResponse['news'];
-
+       List<dynamic> newsList = jsonResponse['news'];
+      newsList.sort((a, b) => DateTime.parse(b['createdAt']).compareTo(DateTime.parse(a['createdAt'])));
       setState(() {
         _news = newsList;
       });
@@ -67,14 +68,14 @@ class _NewsState extends State<News> {
     print('Error fetching news: $e');
   }
 }
-  void deleteReport(id) async {
+  void deleteNews(String id) async {
     try {
       print('Deleting news with ID: $id');
       var regBody = {
         "id": id,
-      };
+      }; 
       var response = await http.post(
-        Uri.parse('${serverBaseUrl}deleteReport'),
+        Uri.parse('${serverBaseUrl}deleteNews?id=${id}'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(regBody),
       );
@@ -91,7 +92,7 @@ class _NewsState extends State<News> {
 
   @override
 Widget build(BuildContext context) {
-  print('_news: $_news');
+  // print('_news: $_news');
   return Scaffold(
     appBar: PreferredSize(
       preferredSize: Size.fromHeight(kToolbarHeight + 10),
@@ -137,6 +138,11 @@ Widget build(BuildContext context) {
                       title: newsItem['title'],
                       location: newsItem['location'],
                       description: newsItem['desc'],
+                      newsId: newsItem['_id'],
+                       onDelete: (id) {
+                          // Call the deleteNews method with the news item ID
+                          deleteNews(id);
+                        },
                     );
                   }).toList(),
                 ),

@@ -28,7 +28,7 @@ class ReportSection extends StatelessWidget {
           children: [
             Image.asset(
               iconPath, 
-              height: 45,
+              height: 40,
               ),
        
            Row(
@@ -40,7 +40,7 @@ class ReportSection extends StatelessWidget {
                     ReportSectionName,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,  
+                      fontSize: 13,
                     ),
                     textAlign: TextAlign.center, 
                     ),

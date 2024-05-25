@@ -4,6 +4,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:reportaroad/main.dart';
 import 'package:http/http.dart' as http;
+import 'package:reportaroad/pages/FAQs.dart';
+import 'package:reportaroad/pages/PushNotification.dart';
+import 'package:reportaroad/pages/NotificationService.dart';
 import 'package:reportaroad/pages/ReportHistory.dart';
 import 'package:reportaroad/userAuthentication/loginpage.dart';
 import 'package:reportaroad/utils/ImageSelection.dart';
@@ -32,6 +35,9 @@ class _SlideMenuState extends State<SlideMenu> {
   TextEditingController  oldpasswordController = TextEditingController();
   TextEditingController  newpasswordController = TextEditingController();
     TextEditingController  emailController = TextEditingController();
+     final NotificationService service = NotificationService();
+      bool _isSecuredPassword = true;
+   bool _isSecuredCPassword = true;
   bool _isNotValidate = false;
   String? imageUrl;
   bool isNotificationEnabled = true;
@@ -99,7 +105,8 @@ class _SlideMenuState extends State<SlideMenu> {
         firstNameController.clear();
         lastNameController.clear();
         usernameController.clear();
-        showDialog(
+        // ignore: use_build_context_synchronously
+        showDialog (
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
@@ -108,8 +115,9 @@ class _SlideMenuState extends State<SlideMenu> {
               content: Text("Profile Changed successfully!!!"),
               actions: <Widget>[
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
                     Navigator.of(context).pop();
+                    
                   },
                   child: Text(
                     'OK',
@@ -360,8 +368,19 @@ void changePassword() async {
                         ButtonTheme(
                           minWidth: 100,
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               updateProfile();
+                              Navigator.of(context).pop();
+                              service.createNotification(widget.userId,
+                                  "Your profile just has been changed", "", false);
+                              await LocalNotifications.init();
+                              LocalNotifications.showSimpleNotification(
+                                title: 'YYour profile just has been changed',
+                                body:
+                                    'Your profile just has been changed',
+                                payload: 'Payload from Another Page',
+                              );
+                    
                             },
                             style: ElevatedButton.styleFrom(
                               primary: Color.fromARGB(255, 13, 76, 211),
@@ -449,8 +468,18 @@ void changePassword() async {
                         ButtonTheme(
                           minWidth: 100,
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async{
                               changePassword();
+                              Navigator.of(context).pop();
+                               service.createNotification(widget.userId,
+                                  "Your password has been changed", "", false);
+                              await LocalNotifications.init();
+                              LocalNotifications.showSimpleNotification(
+                                title: 'Your password has been changed',
+                                body:
+                                    'Please remember your password',
+                                payload: 'Payload from Another Page',
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               primary: Color.fromARGB(255, 13, 76, 211),
@@ -505,8 +534,17 @@ void changePassword() async {
                         ButtonTheme(
                           minWidth: 100,
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async{
                               DeleteAccount();
+                               service.createNotification(widget.userId,
+                                  "Your account is deleted", "", false);
+                              await LocalNotifications.init();
+                              LocalNotifications.showSimpleNotification(
+                                title: 'Your account is deleted',
+                                body:
+                                    'Please register again to use this app again',
+                                payload: 'Payload from Another Page',
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               primary: Color.fromARGB(255, 13, 76, 211),
@@ -560,6 +598,11 @@ void changePassword() async {
                 leading: Icon(Icons.help_outline),
                 title: Text("FAQs"),
                 onTap: () {
+                   Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>Faqs()),
+                        );
                  
                 },
               ),
@@ -568,5 +611,29 @@ void changePassword() async {
         ],
       ),
     );
+  }
+   Widget tooglePassword() {
+    return IconButton(
+        onPressed: () {
+          setState(() {
+            _isSecuredPassword = !_isSecuredPassword;
+          });
+        },
+        icon: _isSecuredPassword
+            ? const Icon(Icons.visibility)
+            : const Icon(Icons.visibility_off),
+        color: Colors.grey);
+  }
+   Widget toogleCPassword() {
+    return IconButton(
+        onPressed: () {
+          setState(() {
+            _isSecuredCPassword = !_isSecuredCPassword;
+          });
+        },
+        icon: _isSecuredCPassword
+            ? const Icon(Icons.visibility)
+            : const Icon(Icons.visibility_off),
+        color: Colors.grey);
   }
 }

@@ -44,6 +44,14 @@ class NewsDetailPage extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
+             SizedBox(height: 12),
+                  Text(
+                    'Location: $location',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
             Padding(
               padding: EdgeInsets.all(16),
               child: Column(
@@ -64,14 +72,7 @@ class NewsDetailPage extends StatelessWidget {
                       color: Colors.grey[800],
                     ),
                   ),
-                  SizedBox(height: 12),
-                  Text(
-                    'Location: $location',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
+                 
                 ],
               ),
             ),

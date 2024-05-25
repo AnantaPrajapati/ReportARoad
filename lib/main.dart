@@ -9,7 +9,7 @@ import 'package:reportaroad/utils/map.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
-String serverBaseUrl='http://172.20.176.1:3000/';
+String serverBaseUrl='http://10.22.15.215:3000/';
 late String token;
 late String email;
 late String username;

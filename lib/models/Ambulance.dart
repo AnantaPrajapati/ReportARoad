@@ -14,7 +14,7 @@ class Ambulance extends StatefulWidget {
 }
 
 class _ViewAddressPageState extends State<Ambulance> {
-    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late GoogleMapController _mapController;
   late LatLng _userLocation = LatLng(0, 0);
   late CameraPosition _cameraPosition = CameraPosition(
@@ -22,7 +22,7 @@ class _ViewAddressPageState extends State<Ambulance> {
     zoom: 14,
   );
   List<Marker> _markers = [];
-    late PolylinePoints polylinePoints;
+  late PolylinePoints polylinePoints;
   List<LatLng> polylineCoordinates = [];
   late Map<PolylineId, Polyline> polylines;
 
@@ -30,27 +30,31 @@ class _ViewAddressPageState extends State<Ambulance> {
   void initState() {
     super.initState();
     _fetchNearbyPoliceStations();
-    _getUserLocation(); 
-       polylinePoints = PolylinePoints();
+    _getUserLocation();
+    polylinePoints = PolylinePoints();
     polylines = {};
   }
 
   Future<void> _getUserLocation() async {
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _userLocation = LatLng(position.latitude, position.longitude);
     });
   }
 
   Future<void> _fetchNearbyPoliceStations() async {
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     final url =
-        'https://map-places.p.rapidapi.com/nearbysearch/json?location=${position.latitude}%2C${position.longitude}&radius=1500&keyword=Ambulance&type=Ambulance';
+        'https://map-places.p.rapidapi.com/nearbysearch/json?location=${position
+        .latitude}%2C${position
+        .longitude}&radius=1500&keyword=Ambulance&type=Ambulance';
 
     final response = await http.get(
       Uri.parse(url),
       headers: {
-        'X-RapidAPI-Key': '81cafe1dc2msh71a68129873e5c7p13f577jsn5150c49bba61',
+        'X-RapidAPI-Key': '65f542ce27msh6eec9f2d331cd63p15ac38jsn4613e3ea00aa',
         'X-RapidAPI-Host': 'map-places.p.rapidapi.com'
       },
     );
@@ -66,30 +70,36 @@ class _ViewAddressPageState extends State<Ambulance> {
           final double lng = result['geometry']['location']['lng'];
           final String name = result['name'];
           final dynamic rating = result['rating'] ?? 0.0;
-          final String contactNumber = result['formatted_phone_number'] ?? 'N/A';
+          final String contactNumber = result['formatted_phone_number'] ??
+              'N/A';
 
           _markers.add(
             Marker(
               markerId: MarkerId(name),
               position: LatLng(lat, lng),
-              infoWindow: InfoWindow(title: name, snippet: 'Rating: $rating\nContact: $contactNumber'),
+              infoWindow: InfoWindow(title: name,
+                  snippet: 'Rating: $rating\nContact: $contactNumber'),
             ),
           );
         }
 
         _cameraPosition = CameraPosition(
-          target: _markers.isNotEmpty ? _markers.first.position : LatLng(position.latitude, position.longitude),
+          target: _markers.isNotEmpty ? _markers.first.position : LatLng(
+              position.latitude, position.longitude),
           zoom: 14,
         );
       });
     } else {
-      print('Failed to fetch nearby police stations: ${response.reasonPhrase}');
+      print('Failed to fetch nearby Ambulance: ${response.reasonPhrase}');
     }
   }
- Future<void> _getRouteToNearestPlace() async {
-    LatLng nearestPlace = _markers.isNotEmpty ? _markers.first.position : _userLocation;
+
+  Future<void> _getRouteToNearestPlace() async {
+    LatLng nearestPlace = _markers.isNotEmpty
+        ? _markers.first.position
+        : _userLocation;
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      "81cafe1dc2msh71a68129873e5c7p13f577jsn5150c49bba61", 
+      "81cafe1dc2msh71a68129873e5c7p13f577jsn5150c49bba61",
       PointLatLng(_userLocation.latitude, _userLocation.longitude),
       PointLatLng(nearestPlace.latitude, nearestPlace.longitude),
       travelMode: TravelMode.driving,
@@ -136,7 +146,7 @@ class _ViewAddressPageState extends State<Ambulance> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    key: _scaffoldKey,
+      key: _scaffoldKey,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight + 10),
         child: Container(
@@ -151,42 +161,40 @@ class _ViewAddressPageState extends State<Ambulance> {
               ),
             ),
             centerTitle: true,
-             leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white,),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
           ),
         ),
       ),
       body: Stack(
         children: [
-          GoogleMap(
-            initialCameraPosition: _cameraPosition,
-            mapType: MapType.normal,
-            markers: Set.from(_markers),
-            polylines: Set<Polyline>.of(polylines.values),
+          Container(
+            width: MediaQuery
+                .of(context)
+                .size
+                .width, // Full width of the screen
+            height: MediaQuery
+                .of(context)
+                .size
+                .height , // 50% of the screen height
+            child: GoogleMap(
+              initialCameraPosition: _cameraPosition,
+              mapType: MapType.normal,
+              markers: Set.from(_markers),
+              polylines: Set<Polyline>.of(polylines.values),
               myLocationEnabled: true,
-            onMapCreated: (GoogleMapController controller) {
-              _mapController = controller;
-            },
-               zoomControlsEnabled: false,
+              onMapCreated: (GoogleMapController controller) {
+                _mapController = controller;
+              },
+              zoomControlsEnabled: false,
               myLocationButtonEnabled: false,
               compassEnabled: true,
+            ),
           ),
-          // Positioned(
-          //   bottom: 16,
-          //   right: 16,
-          //   child: Column(
-          //     children: [
-          //       FloatingActionButton(
-          //         onPressed: _getRouteToNearestPlace,
-          //         child: Icon(Icons.directions),
-          //       ),
-          //     ],
-          //   ),
-          // ),
           Positioned(
             bottom: 85,
             right: 16,
@@ -194,32 +202,32 @@ class _ViewAddressPageState extends State<Ambulance> {
               children: [
                 FloatingActionButton(
                   onPressed: _zoomIn,
-                   backgroundColor: Colors.white,
-                    mini: true,
-                    child: const Icon(
-                      Icons.add,
-                      color: Colors.blue,
-                    ),
+                  backgroundColor: Colors.white,
+                  mini: true,
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.blue,
+                  ),
                 ),
                 SizedBox(height: 10),
                 FloatingActionButton(
                   onPressed: _zoomOut,
                   backgroundColor: Colors.white,
-                    mini: true,
-                    child: const Icon(
-                      Icons.remove,
-                      color: Colors.blue,
-                    ),
+                  mini: true,
+                  child: const Icon(
+                    Icons.remove,
+                    color: Colors.blue,
+                  ),
                 ),
                 SizedBox(height: 10),
                 FloatingActionButton(
                   onPressed: _goToCurrentLocation,
                   backgroundColor: Colors.white,
-                    mini: true,
-                    child: const Icon(
-                      Icons.my_location,
-                      color: Colors.blue,
-                    ),
+                  mini: true,
+                  child: const Icon(
+                    Icons.my_location,
+                    color: Colors.blue,
+                  ),
                 ),
               ],
             ),

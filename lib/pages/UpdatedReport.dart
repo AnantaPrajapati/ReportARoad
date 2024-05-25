@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:reportaroad/main.dart';
+import 'package:reportaroad/pages/NotificationService.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'PushNotification.dart';
 
 class UpdatedReport extends StatefulWidget {
   final String userId;
@@ -30,6 +33,7 @@ class _ViewReportsState extends State<UpdatedReport> {
   String feedback = '';
   TextEditingController ratingController = TextEditingController();
   TextEditingController feedbackController = TextEditingController();
+  final NotificationService service = NotificationService();
   bool _isNotValidate = false;
   int potholesFixedCount = 0;
 
@@ -70,6 +74,8 @@ void _launchMap(String location) async {
       );
 
       var jsonResponse = jsonDecode(response.body);
+       List<dynamic> reports = jsonResponse['success'];
+       reports.sort((a, b) => DateTime.parse(b['createdAt']).compareTo(DateTime.parse(a['createdAt'])));
       setState(() {
         _report = jsonResponse['success'];
          potholesFixedCount += _report.length;
@@ -424,9 +430,19 @@ void _launchMap(String location) async {
             actions: <Widget>[
               TextButton(
                 child: Text("Submit"),
-                onPressed: () {
+                onPressed: () async {
                   submitRatingAndFeedback(reportId);
                   Navigator.of(context).pop();
+                  service.createNotification(widget.userId,
+                      "Your Rating and feedback is submitted", "", false);
+                  await LocalNotifications.init();
+                  LocalNotifications.showSimpleNotification(
+                    title: 'Your Rating and feedback is submitted',
+                    body:
+                    'Your Rating and feedback is submitted',
+                    payload: 'Payload from Another Page',
+                  );
+
                 },
               ),
               TextButton(

@@ -314,6 +314,7 @@ class HomeState extends State<Home> {
                               );
                             }
                           },
+
                           child: ReportSection(
                             ReportSectionName: myReportSection[index][0],
                             iconPath: myReportSection[index][1],

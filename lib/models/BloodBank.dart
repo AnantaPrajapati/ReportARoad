@@ -50,7 +50,7 @@ class _ViewAddressPageState extends State<BloodBank> {
     final response = await http.get(
       Uri.parse(url),
       headers: {
-        'X-RapidAPI-Key': 'f94610bd79msh579b9bfbd97e821p101b85jsnb9a65d4997c6',
+        'X-RapidAPI-Key': '65f542ce27msh6eec9f2d331cd63p15ac38jsn4613e3ea00aa',
         'X-RapidAPI-Host': 'map-places.p.rapidapi.com'
       },
     );
@@ -145,7 +145,7 @@ class _ViewAddressPageState extends State<BloodBank> {
             backgroundColor: Color(0xFF2C75FF),
             elevation: 5,
             title: const Text(
-              "Police Station",
+              "Blood bank",
               style: TextStyle(
                 color: Colors.white,
               ),

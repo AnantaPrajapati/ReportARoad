@@ -72,6 +72,8 @@ void shareReport(Map<String, dynamic> report) async {
       );
 
       var jsonResponse = jsonDecode(response.body);
+      List<dynamic> reports = jsonResponse['success'];
+       reports.sort((a, b) => DateTime.parse(b['createdAt']).compareTo(DateTime.parse(a['createdAt'])));
       setState(() {
         _report = jsonResponse['success'];
         _report.forEach((report) {

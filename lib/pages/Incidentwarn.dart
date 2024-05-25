@@ -67,7 +67,7 @@ class _IncidentWarningState extends State<Incidentwarn> {
         "id": id,
       };
       var response = await http.post(
-        Uri.parse('${serverBaseUrl}deleteReport'),
+        Uri.parse('${serverBaseUrl}deleteIncidentReport'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(regBody),
       );

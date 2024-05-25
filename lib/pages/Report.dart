@@ -1,10 +1,11 @@
-
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:reportaroad/main.dart';
 import 'package:reportaroad/models/image.dart';
+import 'package:reportaroad/pages/NotificationService.dart';
+import 'package:reportaroad/pages/PushNotification.dart';
 import 'package:reportaroad/pages/ViewReport.dart';
 import 'package:reportaroad/utils/userlocation.dart';
 import '../utils/SeverityDropdown.dart';
@@ -14,15 +15,20 @@ class Report extends StatefulWidget {
   // final String email;
   final String userId;
   final token;
-    final Function(int) updateReportCount; 
-  Report({super.key, required this.userId, required this.token, required this.updateReportCount});
+  final Function(int) updateReportCount;
+  Report(
+      {super.key,
+      required this.userId,
+      required this.token,
+      required this.updateReportCount});
 
   @override
   State<Report> createState() => _ReportState();
 }
 
 class _ReportState extends State<Report> {
-   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final NotificationService service = NotificationService();
   final locationController = TextEditingController();
   final severityController = TextEditingController();
   final descController = TextEditingController();
@@ -31,54 +37,58 @@ class _ReportState extends State<Report> {
   final double horizontalPadding = 40;
   final double verticalPadding = 25;
   late String userId;
-   int reportCount = 0;
+  int reportCount = 0;
 
   GoogleMapController? mapController;
-
 
   void setLocation(String address, String latitude, String longitude) {
     setState(() {
       locationController.text = '$address($latitude, $longitude)';
     });
   }
- 
- @override
+
+  @override
   void initState() {
     super.initState();
+    userId = widget.userId;
+    token = widget.token;
     // TODO: implement initState
-    ViewReports(userId: widget.userId, token: widget.token,);
+    ViewReports(
+      userId: widget.userId,
+      token: widget.token,
+    );
   }
+
   void submit() async {
-  if (locationController.text.isNotEmpty &&
-      severityController.text.isNotEmpty &&
-      descController.text.isNotEmpty &&
-      _imageUrls != null) {
-    var reqBody = {
-      "userId": widget.userId,
-      "location": locationController.text,
-      "severity": severityController.text,
-      "desc": descController.text,
-      "images": _imageUrls,
-      "status": "pending", 
-    };
+    if (locationController.text.isNotEmpty &&
+        severityController.text.isNotEmpty &&
+        descController.text.isNotEmpty &&
+        _imageUrls != null) {
+      var reqBody = {
+        "userId": widget.userId,
+        "location": locationController.text,
+        "severity": severityController.text,
+        "desc": descController.text,
+        "images": _imageUrls,
+        "status": "pending",
+      };
 
-    var response = await http.post(Uri.parse('${serverBaseUrl}report'),
-        headers: {"Content-type": "application/json"},
-        body: jsonEncode(reqBody));
+      var response = await http.post(Uri.parse('${serverBaseUrl}report'),
+          headers: {"Content-type": "application/json"},
+          body: jsonEncode(reqBody));
 
-    if (response.statusCode == 200) {
-      locationController.clear();
-      severityController.clear();
-      descController.clear();
-      widget.updateReportCount(reportCount + 1); 
-      ViewReports(userId:userId, token: token,);
-      var jsonResponse = jsonDecode(response.body);
-      print(jsonResponse['status']);
+      if (response.statusCode == 200) {
+        locationController.clear();
+        severityController.clear();
+        descController.clear();
+        _imageUrls.clear();
+        var jsonResponse = jsonDecode(response.body);
+        print(jsonResponse['status']);
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text(''),
+              title: Text('Report Submitted successfully'),
               content: Text("Report Submitted successfully"),
               actions: <Widget>[
                 TextButton(
@@ -91,39 +101,42 @@ class _ReportState extends State<Report> {
             );
           },
         );
-
+        widget.updateReportCount(reportCount + 1);
+        ViewReports(
+          userId: userId,
+          token: token,
+        );
+      } else {
+        var errorMessage = jsonDecode(response.body)['error'];
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(errorMessage),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
     } else {
-      var errorMessage = jsonDecode(response.body)['error'];
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Error'),
-            content: Text(errorMessage),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
+      setState(() {
+        _isNotValidate = true;
+      });
     }
-  } else {
-    setState(() {
-      _isNotValidate = true;
-    });
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    key: _scaffoldKey,
+      key: _scaffoldKey,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight + 10),
         child: Container(
@@ -160,11 +173,14 @@ class _ReportState extends State<Report> {
                         child: GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onVerticalDragUpdate: (_) {},
-                          child: Map(mapController: mapController, markers: [],),
+                          child: Map(
+                            mapController: mapController,
+                            markers: [],
+                          ),
                         ),
                       ),
                     ),
-                    Userlocationpage(  
+                    Userlocationpage(
                         onLocationSelected: (address, latitude, longitude) {
                       setLocation(address, latitude, longitude);
                     }),
@@ -215,18 +231,37 @@ class _ReportState extends State<Report> {
                           ImageForm(
                             onImageUploaded: (List<String> imageUrls) {
                               setState(() {
-                               _imageUrls = imageUrls;
-
+                                _imageUrls = imageUrls;
                               });
                             },
                           ),
                           //anantaprajapati0@gmail.com
-                          
 
                           SizedBox(height: 20.0),
                           ElevatedButton(
-                            onPressed: () {
-                              submit();
+                            onPressed: () async {
+                               submit();
+                              // try {
+                              //   await service.createNotification(widget.userId,
+                              //       "Your Report is submitted", "", false);
+                              //   await LocalNotifications.init();
+                              //   LocalNotifications.showSimpleNotification(
+                              //     title: 'Your report is submitted',
+                              //     body: 'Your Report for potholes is submitted',
+                              //     payload: 'Payload from Another Page',
+                              //   );
+                              // } catch (e) {
+                              //   print('Failed to create notification: $e');
+                              // }
+                              service.createNotification(widget.userId,
+                                  "Your Report is submitted", "", false);
+                              await LocalNotifications.init();
+                              LocalNotifications.showSimpleNotification(
+                                title: 'Your Report is submitted',
+                                body:
+                                'Your Report is submitted',
+                                payload: 'Payload from Another Page',
+                              );
                             },
                             child: const Text(
                               "Submit",
